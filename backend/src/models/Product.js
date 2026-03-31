@@ -79,6 +79,16 @@ const Product = sequelize.define('Product', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  is_best: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: 'Admin-flagged best seller for dashboard',
+  },
+  is_featured: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: 'Admin-flagged featured product for hero grid',
+  },
   meta_title: {
     type: DataTypes.STRING(255),
     allowNull: true,

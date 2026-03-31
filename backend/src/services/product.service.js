@@ -301,6 +301,84 @@ async function bulkImport(fileBuffer, adminId, filename) {
   }
 }
 
+/**
+ * Get best/featured products (admin-flagged)
+ */
+async function getBestProducts(limit = 10) {
+  const products = await Product.findAll({
+    where: { is_best: true, is_active: true },
+    include: [{ model: ProductImage, as: 'images', attributes: ['id', 'image_url', 'is_primary', 'sort_order'] }],
+    order: [['created_at', 'DESC']],
+    limit: parseInt(limit, 10),
+  });
+  return products;
+}
+
+/**
+ * Get products grouped by brand (top N brands, M products each)
+ */
+async function getProductsByBrand(brandLimit = 5, productLimit = 10) {
+  // Get top brands by product count
+  const brandRows = await Product.findAll({
+    attributes: [
+      'brand',
+      [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+    ],
+    where: { brand: { [Op.ne]: null }, is_active: true },
+    group: ['brand'],
+    order: [[sequelize.fn('COUNT', sequelize.col('id')), 'DESC']],
+    limit: parseInt(brandLimit, 10),
+    raw: true,
+  });
+
+  const brands = brandRows.map((b) => b.brand).filter(Boolean);
+  const result = {};
+
+  for (const brand of brands) {
+    const products = await Product.findAll({
+      where: { brand, is_active: true },
+      include: [{ model: ProductImage, as: 'images', attributes: ['id', 'image_url', 'is_primary', 'sort_order'] }],
+      order: [['created_at', 'DESC']],
+      limit: parseInt(productLimit, 10),
+    });
+    result[brand] = products;
+  }
+
+  return result;
+}
+
+/**
+ * Get products grouped by category (top N categories, M products each)
+ */
+async function getProductsByCategory(categoryLimit = 5, productLimit = 10) {
+  const categoryRows = await Product.findAll({
+    attributes: [
+      'category',
+      [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+    ],
+    where: { category: { [Op.ne]: null }, is_active: true },
+    group: ['category'],
+    order: [[sequelize.fn('COUNT', sequelize.col('id')), 'DESC']],
+    limit: parseInt(categoryLimit, 10),
+    raw: true,
+  });
+
+  const categories = categoryRows.map((c) => c.category).filter(Boolean);
+  const result = {};
+
+  for (const category of categories) {
+    const products = await Product.findAll({
+      where: { category, is_active: true },
+      include: [{ model: ProductImage, as: 'images', attributes: ['id', 'image_url', 'is_primary', 'sort_order'] }],
+      order: [['created_at', 'DESC']],
+      limit: parseInt(productLimit, 10),
+    });
+    result[category] = products;
+  }
+
+  return result;
+}
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -312,4 +390,7 @@ module.exports = {
   getCategories,
   getBrands,
   bulkImport,
+  getBestProducts,
+  getProductsByBrand,
+  getProductsByCategory,
 };

@@ -26,6 +26,21 @@ exports.getBrands = catchAsync(async (req, res) => {
   ApiResponse.success(res, 'Brands fetched', brands);
 });
 
+exports.getBestProducts = catchAsync(async (req, res) => {
+  const products = await productService.getBestProducts(req.query.limit);
+  ApiResponse.success(res, 'Best products fetched', products);
+});
+
+exports.getProductsByBrand = catchAsync(async (req, res) => {
+  const result = await productService.getProductsByBrand(req.query.brandLimit, req.query.productLimit);
+  ApiResponse.success(res, 'Products by brand fetched', result);
+});
+
+exports.getProductsByCategory = catchAsync(async (req, res) => {
+  const result = await productService.getProductsByCategory(req.query.categoryLimit, req.query.productLimit);
+  ApiResponse.success(res, 'Products by category fetched', result);
+});
+
 // ─── ADMIN ───────────────────────────────────────────────────────────────────
 
 exports.adminListProducts = catchAsync(async (req, res) => {
