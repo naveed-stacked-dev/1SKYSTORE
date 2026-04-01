@@ -1,7 +1,11 @@
-import { MapPin, Edit2, Trash2, Check } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, Edit2, Trash2, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 export default function AddressCard({ address, selected, onSelect, onEdit, onDelete }) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const phoneVal = address.phone || address.phone_enc;
+
   return (
     <div
       onClick={onSelect ? () => onSelect(address) : undefined}
@@ -25,6 +29,9 @@ export default function AddressCard({ address, selected, onSelect, onEdit, onDel
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100">{address.full_name}</p>
+          {phoneVal && (
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">{phoneVal}</p>
+          )}
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">
             {address.address_line1}
             {address.address_line2 && `, ${address.address_line2}`}
@@ -33,9 +40,6 @@ export default function AddressCard({ address, selected, onSelect, onEdit, onDel
             <br />
             {address.country}
           </p>
-          {address.phone && (
-            <p className="text-xs text-neutral-400 mt-1">{address.phone}</p>
-          )}
           {address.is_default && (
             <span className="inline-block mt-2 text-[10px] font-medium text-primary-500 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-md">
               Default
@@ -56,10 +60,21 @@ export default function AddressCard({ address, selected, onSelect, onEdit, onDel
           )}
           {onDelete && (
             <button
-              onClick={(e) => { e.stopPropagation(); onDelete(address.id); }}
-              className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-error-500 transition-colors ml-auto"
+              disabled={isDeleting}
+              onClick={async (e) => { 
+                e.stopPropagation(); 
+                setIsDeleting(true);
+                try {
+                  await onDelete(address.id);
+                } finally {
+                  // If the component gets unmounted by parent on delete, this might not run, which is fine
+                  setIsDeleting(false);
+                }
+              }}
+              className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-error-500 disabled:opacity-50 transition-colors ml-auto"
             >
-              <Trash2 className="w-3.5 h-3.5" /> Delete
+              {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </button>
           )}
         </div>

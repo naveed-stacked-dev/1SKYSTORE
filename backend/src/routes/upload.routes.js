@@ -5,6 +5,8 @@ const { uploadSingle, uploadMultiple } = require('../middlewares/upload');
 
 router.use(authenticateAdmin);
 
+router.get('/gallery', uploadController.getGallery);
+
 router.post('/image', (req, res, next) => {
   req.uploadFolder = 'products';
   next();

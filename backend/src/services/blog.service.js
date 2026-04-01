@@ -96,4 +96,15 @@ async function adminListBlogs(query) {
   return { blogs: rows, pagination: getPaginationMeta(count, page, pageSize) };
 }
 
-module.exports = { createBlog, updateBlog, deleteBlog, getBlogBySlug, listPublicBlogs, adminListBlogs };
+/**
+ * Get blog by ID (admin — any status)
+ */
+async function getBlogById(blogId) {
+  const blog = await Blog.findByPk(blogId, {
+    include: [{ model: Admin, as: 'author', attributes: ['id', 'first_name', 'last_name', 'email'] }],
+  });
+  if (!blog) throw ApiError.notFound('Blog not found');
+  return blog;
+}
+
+module.exports = { createBlog, updateBlog, deleteBlog, getBlogBySlug, getBlogById, listPublicBlogs, adminListBlogs };

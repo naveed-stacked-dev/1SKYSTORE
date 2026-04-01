@@ -21,6 +21,11 @@ exports.adminListBlogs = catchAsync(async (req, res) => {
   ApiResponse.paginated(res, 'Blogs fetched', result.blogs, result.pagination);
 });
 
+exports.adminGetBlog = catchAsync(async (req, res) => {
+  const blog = await blogService.getBlogById(req.params.id);
+  ApiResponse.success(res, 'Blog fetched', blog);
+});
+
 exports.createBlog = catchAsync(async (req, res) => {
   const blog = await blogService.createBlog(req.admin.id, req.body);
   ApiResponse.created(res, 'Blog created', blog);

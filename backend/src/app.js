@@ -9,8 +9,21 @@ const app = express();
 
 // ─── SECURITY ────────────────────────────────────────────────────────────────
 app.use(helmet());
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000'
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
@@ -29,12 +42,21 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ─── LOGGING ─────────────────────────────────────────────────────────────────
+morgan.token('customDate', () => {
+  const d = new Date();
+  const pad = (n) => n.toString().padStart(2, '0');
+  const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const time = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  return `${date} ${time}`;
+});
+
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('combined'));
+  app.use(morgan('[:customDate] :method :url → :status :response-time ms'));
 }
 
 // ─── ROUTES ──────────────────────────────────────────────────────────────────
 const API_PREFIX = process.env.API_PREFIX || '/api/v1';
+
 app.use(API_PREFIX, require('./routes/index'));
 
 // ─── HEALTH CHECK ────────────────────────────────────────────────────────────

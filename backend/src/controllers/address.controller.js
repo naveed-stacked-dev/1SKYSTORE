@@ -18,6 +18,9 @@ exports.getAddress = catchAsync(async (req, res) => {
 });
 
 exports.updateAddress = catchAsync(async (req, res) => {
+  // console.log(req.body);
+  // console.log(req.params.id);
+  // console.log(req.user.id);
   const address = await addressService.updateAddress(req.user.id, req.params.id, req.body);
   ApiResponse.success(res, 'Address updated', address);
 });

@@ -1,9 +1,10 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, TrendingUp, BookOpen, Send } from 'lucide-react';
 import productService from '@/api/product.service';
 import blogService from '@/api/blog.service';
+import { fetchWithCache } from '@/utils/apiCache';
 import { useAuth } from '@/context/AuthContext';
 import { useGeo } from '@/context/GeoContext';
 import ProductCard from '@/components/ecommerce/ProductCard';
@@ -23,9 +24,13 @@ export default function Home() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
+  
+  const hasFetched = useRef(false);
 
   useEffect(() => {
     document.title = '1SkyStore — Natural Wellness & Homeopathy';
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     loadData();
   }, []);
 
@@ -34,8 +39,8 @@ export default function Home() {
       setLoading(true);
       const [productsRes, categoriesRes, brandsRes, blogsRes] = await Promise.allSettled([
         productService.getProducts({ pageSize: 8 }),
-        productService.getCategories(),
-        productService.getBrands(),
+        fetchWithCache('categories', () => productService.getCategories()),
+        fetchWithCache('brands', () => productService.getBrands()),
         blogService.getBlogs({ limit: 3 }),
       ]);
 

@@ -54,12 +54,45 @@ exports.adminGetProduct = catchAsync(async (req, res) => {
 });
 
 exports.createProduct = catchAsync(async (req, res) => {
-  const product = await productService.createProduct(req.body);
+  let images = [];
+  if (req.body.images) {
+    images = Array.isArray(req.body.images) ? req.body.images : [req.body.images];
+  }
+  if (req.files && req.files.length > 0) {
+    const fileUrls = req.files.map((file) => file.location);
+    images = [...images, ...fileUrls];
+  }
+
+  const productData = { ...req.body, images };
+  const product = await productService.createProduct(productData);
   ApiResponse.created(res, 'Product created', product);
 });
 
 exports.updateProduct = catchAsync(async (req, res) => {
-  const product = await productService.updateProduct(req.params.id, req.body);
+  let images = [];
+  let hasImagesUpdate = false;
+
+  if (req.body.images !== undefined) {
+    hasImagesUpdate = true;
+    if (Array.isArray(req.body.images)) {
+      images = req.body.images;
+    } else if (req.body.images) {
+      images = [req.body.images];
+    }
+  }
+
+  if (req.files && req.files.length > 0) {
+    hasImagesUpdate = true;
+    const fileUrls = req.files.map((file) => file.location);
+    images = [...images, ...fileUrls];
+  }
+
+  const productData = { ...req.body };
+  if (hasImagesUpdate) {
+    productData.images = images;
+  }
+
+  const product = await productService.updateProduct(req.params.id, productData);
   ApiResponse.success(res, 'Product updated', product);
 });
 

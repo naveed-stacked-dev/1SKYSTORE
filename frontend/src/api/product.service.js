@@ -1,13 +1,13 @@
 import API from './axios';
 
 const productService = {
-  getProducts: (params = {}) => API.get('/products', { params }),
-  getBestProducts: (params = {}) => API.get('/products/best', { params }),
-  getProductsByBrand: (params = {}) => API.get('/products/by-brand', { params }),
-  getProductsByCategory: (params = {}) => API.get('/products/by-category', { params }),
-  getProductBySlug: (slug) => API.get(`/products/${slug}`),
-  getCategories: () => API.get('/products/categories'),
-  getBrands: () => API.get('/products/brands'),
+  getProducts: (params = {}, config = {}) => API.get('/products', { params, ...config }),
+  getBestProducts: (params = {}, config = {}) => API.get('/products/best', { params, ...config }),
+  getProductsByBrand: (params = {}, config = {}) => API.get('/products/by-brand', { params, ...config }),
+  getProductsByCategory: (params = {}, config = {}) => API.get('/products/by-category', { params, ...config }),
+  getProductBySlug: (slug, config = {}) => API.get(`/products/${slug}`, config),
+  getCategories: (config = {}) => API.get('/products/categories', config),
+  getBrands: (config = {}) => API.get('/products/brands', config),
 
   // Admin
   adminGetProducts: (params = {}) => API.get('/admin/products', { params }),

@@ -1,151 +1,1821 @@
 {
-	"info": {
-		"_postman_id": "homeopathy-ecommerce-full-v1",
-		"name": "HomeoPathy Ecommerce Full API",
-		"description": "Comprehensive Postman collection for the HomeoPathy Ecommerce Backend. Includes all 90+ endpoints for users and admins.",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Auth",
-			"item": [
-				{ "name": "User Register", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"+919876543210\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] } } },
-				{ "name": "User Login", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] } } },
-				{ "name": "Google Login", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"idToken\": \"FIREBASE_ID_TOKEN_HERE\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/auth/google", "host": ["{{baseUrl}}"], "path": ["auth", "google"] } } },
-				{ "name": "Refresh Token", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"REFRESH_TOKEN_HERE\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] } } },
-				{ "name": "Verify Email", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/auth/verify-email?token=VERIFICATION_TOKEN", "host": ["{{baseUrl}}"], "path": ["auth", "verify-email"], "query": [{ "key": "token", "value": "VERIFICATION_TOKEN" }] } } },
-				{ "name": "Forgot Password", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"] } } },
-				{ "name": "Reset Password", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"token\": \"RESET_TOKEN\",\n  \"password\": \"NewPassword123!\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"] } } },
-				{ "name": "Change Password", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"oldPassword\": \"OldPassword123!\",\n  \"newPassword\": \"NewPassword123!\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/auth/change-password", "host": ["{{baseUrl}}"], "path": ["auth", "change-password"] } } },
-				{ "name": "Admin Auth Login", "request": { "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@hp.com\",\n  \"password\": \"AdminP@ss123\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/auth/login", "host": ["{{baseUrl}}"], "path": ["admin", "auth", "login"] } } },
-				{ "name": "Admin Auth Register", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"email\": \"manager@hp.com\",\n  \"password\": \"ManagerP@ss123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Manager\",\n  \"role\": \"manager\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/auth/register", "host": ["{{baseUrl}}"], "path": ["admin", "auth", "register"] } } }
-			]
-		},
-		{
-			"name": "User Profile",
-			"item": [
-				{ "name": "Get Profile", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/users/profile", "host": ["{{baseUrl}}"], "path": ["users", "profile"] } } },
-				{ "name": "Update Profile", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "PUT", "body": { "mode": "raw", "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"+919999999999\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/users/profile", "host": ["{{baseUrl}}"], "path": ["users", "profile"] } } }
-			]
-		},
-		{
-			"name": "Admin Management",
-			"item": [
-				{ "name": "List Admins", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/admins", "host": ["{{baseUrl}}"], "path": ["admin", "admins"] } } },
-				{ "name": "Create Admin", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"email\": \"newadmin@hp.com\",\n  \"password\": \"AdminP@ss123\",\n  \"first_name\": \"New\",\n  \"last_name\": \"Admin\",\n  \"role\": \"manager\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/admins", "host": ["{{baseUrl}}"], "path": ["admin", "admins"] } } },
-				{ "name": "Update Admin", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "PUT", "body": { "mode": "raw", "raw": "{\n  \"first_name\": \"Updated Name\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/admins/:id", "host": ["{{baseUrl}}"], "path": ["admin", "admins", ":id"], "variable": [{ "key": "id", "value": "1" }] } } }
-			]
-		},
-		{
-			"name": "Products (Public)",
-			"item": [
-				{ "name": "List Products", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/products?page=1&pageSize=10", "host": ["{{baseUrl}}"], "path": ["products"], "query": [{ "key": "page", "value": "1" }, { "key": "pageSize", "value": "10" }] } } },
-				{ "name": "Product Detail", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/products/:slug", "host": ["{{baseUrl}}"], "path": ["products", ":slug"], "variable": [{ "key": "slug", "value": "arnica-montana-30c" }] } } },
-				{ "name": "Categories", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/products/categories", "host": ["{{baseUrl}}"], "path": ["products", "categories"] } } },
-				{ "name": "Brands", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/products/brands", "host": ["{{baseUrl}}"], "path": ["products", "brands"] } } }
-			]
-		},
-		{
-			"name": "Admin Products",
-			"item": [
-				{ "name": "List All", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/products", "host": ["{{baseUrl}}"], "path": ["admin", "products"] } } },
-				{ "name": "Create Product", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"name\": \"Arnica Montana 30C\",\n  \"sku\": \"HP-ARN-30C\",\n  \"description\": \"Natural recovery\",\n  \"price_inr\": 250,\n  \"price_usd\": 15,\n  \"stock\": 100,\n  \"category\": \"Remedies\",\n  \"brand\": \"HomeoCare\",\n  \"is_active\": true\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/products", "host": ["{{baseUrl}}"], "path": ["admin", "products"] } } },
-				{ "name": "Get Product Admin", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/products/:id", "host": ["{{baseUrl}}"], "path": ["admin", "products", ":id"], "variable": [{ "key": "id", "value": "1" }] } } },
-				{ "name": "Update Product", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "PUT", "body": { "mode": "raw", "raw": "{\n  \"price_inr\": 280\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/products/:id", "host": ["{{baseUrl}}"], "path": ["admin", "products", ":id"], "variable": [{ "key": "id", "value": "1" }] } } },
-				{ "name": "Delete Product", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "DELETE", "url": { "raw": "{{baseUrl}}/admin/products/:id", "host": ["{{baseUrl}}"], "path": ["admin", "products", ":id"], "variable": [{ "key": "id", "value": "1" }] } } },
-				{ "name": "Toggle Status", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "PATCH", "url": { "raw": "{{baseUrl}}/admin/products/:id/toggle", "host": ["{{baseUrl}}"], "path": ["admin", "products", ":id", "toggle"], "variable": [{ "key": "id", "value": "1" }] } } },
-				{ "name": "Bulk Import", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": "" }] }, "url": { "raw": "{{baseUrl}}/admin/products/bulk-import", "host": ["{{baseUrl}}"], "path": ["admin", "products", "bulk-import"] } } }
-			]
-		},
-		{
-			"name": "Cart",
-			"item": [
-				{ "name": "Get Cart", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/cart", "host": ["{{baseUrl}}"], "path": ["cart"] } } },
-				{ "name": "Add Item", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 2\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/cart/add", "host": ["{{baseUrl}}"], "path": ["cart", "add"] } } },
-				{ "name": "Update Cart Item", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "PUT", "body": { "mode": "raw", "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 3\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/cart/update", "host": ["{{baseUrl}}"], "path": ["cart", "update"] } } },
-				{ "name": "Remove Item", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "DELETE", "url": { "raw": "{{baseUrl}}/cart/item/:productId", "host": ["{{baseUrl}}"], "path": ["cart", "item", ":productId"], "variable": [{ "key": "productId", "value": "1" }] } } },
-				{ "name": "Clear Cart", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "DELETE", "url": { "raw": "{{baseUrl}}/cart/clear", "host": ["{{baseUrl}}"], "path": ["cart", "clear"] } } }
-			]
-		},
-		{
-			"name": "Addresses",
-			"item": [
-				{ "name": "List Addresses", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/addresses", "host": ["{{baseUrl}}"], "path": ["addresses"] } } },
-				{ "name": "Create Address", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"full_name\": \"John Doe\",\n  \"phone\": \"+919999999999\",\n  \"address_line1\": \"123 Health Street\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"country\": \"India\",\n  \"postal_code\": \"400001\",\n  \"is_default\": true\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/addresses", "host": ["{{baseUrl}}"], "path": ["addresses"] } } },
-				{ "name": "Get Address", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/addresses/:id", "host": ["{{baseUrl}}"], "path": ["addresses", ":id"], "variable": [{ "key": "id", "value": "1" }] } } },
-				{ "name": "Update Address", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "PUT", "body": { "mode": "raw", "raw": "{\n  \"address_line1\": \"456 Wellness Ave\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/addresses/:id", "host": ["{{baseUrl}}"], "path": ["addresses", ":id"], "variable": [{ "key": "id", "value": "1" }] } } },
-				{ "name": "Delete Address", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "DELETE", "url": { "raw": "{{baseUrl}}/addresses/:id", "host": ["{{baseUrl}}"], "path": ["addresses", ":id"], "variable": [{ "key": "id", "value": "1" }] } } }
-			]
-		},
-		{
-			"name": "Orders",
-			"item": [
-				{ "name": "Place Order", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"address_id\": 1,\n  \"payment_provider\": \"razorpay\",\n  \"coupon_code\": \"DISCOUNT20\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] } } },
-				{ "name": "Order History", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] } } },
-				{ "name": "Get Order Detail", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/orders/:id", "host": ["{{baseUrl}}"], "path": ["orders", ":id"], "variable": [{ "key": "id", "value": "1" }] } } }
-			]
-		},
-		{
-			"name": "Admin Orders",
-			"item": [
-				{ "name": "List Orders (Admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/orders", "host": ["{{baseUrl}}"], "path": ["admin", "orders"] } } },
-				{ "name": "Get Order Admin", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/orders/:id", "host": ["{{baseUrl}}"], "path": ["admin", "orders", ":id"], "variable": [{ "key": "id", "value": "1" }] } } },
-				{ "name": "Update Order Status", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "PATCH", "body": { "mode": "raw", "raw": "{\n  \"status\": \"shipped\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/orders/:id/status", "host": ["{{baseUrl}}"], "path": ["admin", "orders", ":id", "status"], "variable": [{ "key": "id", "value": "1" }] } } }
-			]
-		},
-		{
-			"name": "Payments & Shipping",
-			"item": [
-				{ "name": "Stripe Create Intent", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"order_id\": 1,\n  \"amount\": 15,\n  \"currency\": \"USD\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/payments/stripe/create-intent", "host": ["{{baseUrl}}"], "path": ["payments", "stripe", "create-intent"] } } },
-				{ "name": "Stripe Verify Payment", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"payment_intent_id\": \"pi_XXX\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/payments/stripe/verify", "host": ["{{baseUrl}}"], "path": ["payments", "stripe", "verify"] } } },
-				{ "name": "Razorpay Create Order", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"order_id\": 1,\n  \"amount\": 500,\n  \"currency\": \"INR\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/payments/razorpay/create-order", "host": ["{{baseUrl}}"], "path": ["payments", "razorpay", "create-order"] } } },
-				{ "name": "Razorpay Verify Payment", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"razorpay_order_id\": \"order_XXX\",\n  \"razorpay_payment_id\": \"pay_XXX\",\n  \"razorpay_signature\": \"sig_XXX\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/payments/razorpay/verify", "host": ["{{baseUrl}}"], "path": ["payments", "razorpay", "verify"] } } },
-				{ "name": "Calculate Shipping", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"order_id\": 1\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/shipping/calculate", "host": ["{{baseUrl}}"], "path": ["shipping", "calculate"] } } },
-				{ "name": "Create Shipment", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"order_id\": 1\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/shipping/create", "host": ["{{baseUrl}}"], "path": ["shipping", "create"] } } },
-				{ "name": "Track Shipment", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/shipping/track/:shipmentId", "host": ["{{baseUrl}}"], "path": ["shipping", "track", ":shipmentId"], "variable": [{ "key": "shipmentId", "value": "1" }] } } },
-				{ "name": "Generate AWB", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"shipment_id\": 1,\n  \"courier_id\": 2\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/shipping/generate-awb", "host": ["{{baseUrl}}"], "path": ["shipping", "generate-awb"] } } }
-			]
-		},
-		{
-			"name": "Coupons",
-			"item": [
-				{ "name": "Apply Coupon", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"code\": \"SAVE10\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/coupons/apply", "host": ["{{baseUrl}}"], "path": ["coupons", "apply"] } } },
-				{ "name": "List Coupons Admin", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/coupons", "host": ["{{baseUrl}}"], "path": ["admin", "coupons"] } } },
-				{ "name": "Create Coupon (Admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"code\": \"WELCOME25\",\n  \"discount_type\": \"percentage\",\n  \"discount_value\": 25,\n  \"min_order_amount\": 1000,\n  \"is_active\": true\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/coupons", "host": ["{{baseUrl}}"], "path": ["admin", "coupons"] } } },
-				{ "name": "Update Coupon", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "PUT", "body": { "mode": "raw", "raw": "{\n  \"discount_value\": 30\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/coupons/:id", "host": ["{{baseUrl}}"], "path": ["admin", "coupons", ":id"], "variable": [{ "key": "id", "value": "1" }] } } },
-				{ "name": "Delete Coupon", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "DELETE", "url": { "raw": "{{baseUrl}}/admin/coupons/:id", "host": ["{{baseUrl}}"], "path": ["admin", "coupons", ":id"], "variable": [{ "key": "id", "value": "1" }] } } }
-			]
-		},
-		{
-			"name": "Blogs",
-			"item": [
-				{ "name": "List Blogs", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/blogs", "host": ["{{baseUrl}}"], "path": ["blogs"] } } },
-				{ "name": "Blog Detail", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/blogs/:slug", "host": ["{{baseUrl}}"], "path": ["blogs", ":slug"], "variable": [{ "key": "slug", "value": "why-homeopathy-works" }] } } },
-				{ "name": "List Blogs Admin", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/blogs", "host": ["{{baseUrl}}"], "path": ["admin", "blogs"] } } },
-				{ "name": "Create Blog (Admin)", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "raw", "raw": "{\n  \"title\": \"Understanding Potency\",\n  \"content\": \"<p>Potency is a key concept...</p>\",\n  \"is_published\": true\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/blogs", "host": ["{{baseUrl}}"], "path": ["admin", "blogs"] } } },
-				{ "name": "Update Blog", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "PUT", "body": { "mode": "raw", "raw": "{\n  \"title\": \"Potency Explained\"\n}", "options": { "raw": { "language": "json" } } }, "url": { "raw": "{{baseUrl}}/admin/blogs/:id", "host": ["{{baseUrl}}"], "path": ["admin", "blogs", ":id"], "variable": [{ "key": "id", "value": "1" }] } } },
-				{ "name": "Delete Blog", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "DELETE", "url": { "raw": "{{baseUrl}}/admin/blogs/:id", "host": ["{{baseUrl}}"], "path": ["admin", "blogs", ":id"], "variable": [{ "key": "id", "value": "1" }] } } }
-			]
-		},
-		{
-			"name": "Analytics & Utils",
-			"item": [
-				{ "name": "Geo Detect", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/geo/detect", "host": ["{{baseUrl}}"], "path": ["geo", "detect"] } } },
-				{ "name": "Upload Image", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "formdata", "formdata": [{ "key": "image", "type": "file", "src": "" }] }, "url": { "raw": "{{baseUrl}}/upload/image", "host": ["{{baseUrl}}"], "path": ["upload", "image"] } } },
-				{ "name": "Upload Multiple Images", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "POST", "body": { "mode": "formdata", "formdata": [{ "key": "images", "type": "file", "src": "" }] }, "url": { "raw": "{{baseUrl}}/upload/images", "host": ["{{baseUrl}}"], "path": ["upload", "images"] } } },
-				{ "name": "Dashboard Stats", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/analytics/dashboard", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "dashboard"] } } },
-				{ "name": "Sales Stats", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/analytics/sales", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "sales"] } } },
-				{ "name": "Revenue Stats", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/analytics/revenue", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "revenue"] } } },
-				{ "name": "Top Products", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/analytics/top-products", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "top-products"] } } },
-				{ "name": "Top Brands", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/analytics/top-brands", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "top-brands"] } } },
-				{ "name": "User Growth", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/analytics/users", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "users"] } } },
-				{ "name": "Orders Summary", "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] }, "method": "GET", "url": { "raw": "{{baseUrl}}/admin/analytics/orders", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "orders"] } } }
-			]
-		}
-	],
-	"variable": [
-		{ "key": "baseUrl", "value": "http://localhost:5000/api/v1", "type": "string" },
-		{ "key": "accessToken", "value": "", "type": "string" },
-		{ "key": "adminAccessToken", "value": "", "type": "string" }
-	]
+  "info": {
+    "_postman_id": "homeopathy-ecommerce-full-v2",
+    "name": "HomeoPathy Ecommerce Full API - Auto Generated",
+    "description": "Comprehensive auto-generated Postman collection for the HomeoPathy Ecommerce Backend including all endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "AUTH",
+      "item": [
+        {
+          "name": "POST /auth/register",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /auth/login",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /auth/google",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/auth/google",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /auth/refresh",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /auth/verify-email",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-email"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "POST /auth/forgot-password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /auth/reset-password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /auth/change-password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADMINAUTH",
+      "item": [
+        {
+          "name": "POST /admin/auth/login",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "auth",
+                "login"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /admin/auth/register",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "auth",
+                "register"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "USER",
+      "item": [
+        {
+          "name": "GET /users/profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "PUT /users/profile",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADMIN",
+      "item": [
+        {
+          "name": "POST /admin/admins",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/admin/admins",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "admins"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /admin/admins",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/admins",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "admins"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "PUT /admin/admins/:id",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/admin/admins/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "admins",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PRODUCT",
+      "item": [
+        {
+          "name": "GET /products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /products/categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "categories"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /products/brands",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/brands",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "brands"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /products/best",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/best",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "best"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /products/by-brand",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/by-brand",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "by-brand"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /products/by-category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/by-category",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "by-category"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /products/:slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/:slug",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                ":slug"
+              ],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADMINPRODUCT",
+      "item": [
+        {
+          "name": "GET /admin/products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /admin/products/:id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /admin/products",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/admin/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT /admin/products/:id",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /admin/products/:id",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /admin/products/:id/toggle",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/:id/toggle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                ":id",
+                "toggle"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /admin/products/bulk-import",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/bulk-import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "bulk-import"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CART",
+      "item": [
+        {
+          "name": "GET /cart",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/cart",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "POST /cart/add",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/cart/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "add"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT /cart/update",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/cart/update",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "update"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /cart/item/:productId",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/cart/item/:productId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "item",
+                ":productId"
+              ],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /cart/clear",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/cart/clear",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart",
+                "clear"
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADDRESS",
+      "item": [
+        {
+          "name": "POST /addresses",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/addresses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /addresses",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/addresses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /addresses/:id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/addresses/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /addresses/:id",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/addresses/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /addresses/:id",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/addresses/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "addresses",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ORDER",
+      "item": [
+        {
+          "name": "POST /orders",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /orders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /orders/:id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/orders/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADMINORDER",
+      "item": [
+        {
+          "name": "GET /admin/orders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /admin/orders/:id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /admin/orders/:id/status",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PAYMENT",
+      "item": [
+        {
+          "name": "POST /payments/stripe/create-intent",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/payments/stripe/create-intent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "stripe",
+                "create-intent"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /payments/stripe/verify",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/payments/stripe/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "stripe",
+                "verify"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /payments/razorpay/create-order",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/payments/razorpay/create-order",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "razorpay",
+                "create-order"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /payments/razorpay/verify",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/payments/razorpay/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "razorpay",
+                "verify"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "SHIPPING",
+      "item": [
+        {
+          "name": "POST /shipping/calculate",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/shipping/calculate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "calculate"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /shipping/create",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/shipping/create",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "create"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /shipping/track/:shipmentId",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/shipping/track/:shipmentId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "track",
+                ":shipmentId"
+              ],
+              "variable": [
+                {
+                  "key": "shipmentId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /shipping/generate-awb",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/shipping/generate-awb",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "generate-awb"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GEO",
+      "item": [
+        {
+          "name": "GET /geo/detect",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/geo/detect",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "geo",
+                "detect"
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "COUPON",
+      "item": [
+        {
+          "name": "POST /coupons/apply",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/coupons/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "coupons",
+                "apply"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADMINCOUPON",
+      "item": [
+        {
+          "name": "POST /admin/coupons",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/admin/coupons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "coupons"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /admin/coupons",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/coupons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "coupons"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "PUT /admin/coupons/:id",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/admin/coupons/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "coupons",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /admin/coupons/:id",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/admin/coupons/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "coupons",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "BLOG",
+      "item": [
+        {
+          "name": "GET /blogs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/blogs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blogs"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /blogs/:slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/blogs/:slug",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "blogs",
+                ":slug"
+              ],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADMINBLOG",
+      "item": [
+        {
+          "name": "GET /admin/blogs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/blogs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blogs"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "POST /admin/blogs",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/admin/blogs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blogs"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT /admin/blogs/:id",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/admin/blogs/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blogs",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /admin/blogs/:id",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/admin/blogs/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blogs",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ANALYTICS",
+      "item": [
+        {
+          "name": "GET /admin/analytics/dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "dashboard"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /admin/analytics/sales",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/sales",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "sales"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /admin/analytics/revenue",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/revenue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "revenue"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /admin/analytics/top-products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/top-products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "top-products"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /admin/analytics/top-brands",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/top-brands",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "top-brands"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /admin/analytics/users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "users"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /admin/analytics/orders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/analytics/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "orders"
+              ],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "UPLOAD",
+      "item": [
+        {
+          "name": "POST /upload/image",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/upload/image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "upload",
+                "image"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /upload/images",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/upload/images",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "upload",
+                "images"
+              ],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminAccessToken",
+      "value": "",
+      "type": "string"
+    }
+  ]
 }

@@ -7,6 +7,7 @@ router.use('/admin/auth', require('./adminAuth.routes'));
 // ─── USERS ───────────────────────────────────────────────────────────────────
 router.use('/users', require('./user.routes'));
 router.use('/admin/admins', require('./admin.routes'));
+router.use('/admin/users', require('./adminUser.routes'));
 
 // ─── PRODUCTS ────────────────────────────────────────────────────────────────
 router.use('/products', require('./product.routes'));

@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal, X } from 'lucide-react';
 import productService from '@/api/product.service';
+import { fetchWithCache } from '@/utils/apiCache';
 import ProductGrid from '@/components/ecommerce/ProductGrid';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
@@ -16,6 +17,7 @@ export default function Shop() {
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const filtersFetched = useRef(false);
 
   const page = parseInt(searchParams.get('page') || '1');
   const category = searchParams.get('category') || '';
@@ -24,18 +26,22 @@ export default function Shop() {
 
   useEffect(() => {
     document.title = 'Shop — 1SkyStore';
+    if (filtersFetched.current) return;
+    filtersFetched.current = true;
     loadFilters();
   }, []);
 
   useEffect(() => {
-    loadProducts();
+    const controller = new AbortController();
+    loadProducts(controller);
+    return () => controller.abort();
   }, [page, category, brand, sort]);
 
   async function loadFilters() {
     try {
       const [catRes, brandRes] = await Promise.allSettled([
-        productService.getCategories(),
-        productService.getBrands(),
+        fetchWithCache('categories', () => productService.getCategories()),
+        fetchWithCache('brands', () => productService.getBrands()),
       ]);
       if (catRes.status === 'fulfilled') {
         const d = catRes.value.data?.data || catRes.value.data;
@@ -45,10 +51,12 @@ export default function Shop() {
         const d = brandRes.value.data?.data || brandRes.value.data;
         setBrands(Array.isArray(d) ? d : d?.brands || []);
       }
-    } catch {}
+    } catch (err) {
+      console.error('Failed to load filters', err);
+    }
   }
 
-  async function loadProducts() {
+  async function loadProducts(controller) {
     try {
       setLoading(true);
       const params = { page, pageSize: 12 };
@@ -56,12 +64,14 @@ export default function Shop() {
       if (brand) params.brand = brand;
       if (sort) params.sort = sort;
 
-      const res = await productService.getProducts(params);
+      const res = await productService.getProducts(params, { signal: controller.signal });
       const data = res.data?.data || res.data;
       setProducts(data?.products || data?.rows || data || []);
       setTotalPages(data?.totalPages || Math.ceil((data?.count || 0) / 12) || 1);
-    } catch {
-      setProducts([]);
+    } catch (err) {
+      if (err.name !== 'CanceledError') {
+        setProducts([]);
+      }
     } finally {
       setLoading(false);
     }

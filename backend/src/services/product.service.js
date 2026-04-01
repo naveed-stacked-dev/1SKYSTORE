@@ -3,6 +3,7 @@ const XLSX = require('xlsx');
 const { Product, ProductImage, ImportLog, sequelize } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { getPagination, getPaginationMeta } = require('../utils/pagination');
+const { deleteFromS3 } = require('../utils/s3Utils');
 
 /**
  * Create a new product with images
@@ -52,7 +53,12 @@ async function updateProduct(productId, data) {
     await product.update(data, { transaction });
 
     // Update images if provided
+    let urlsToDelete = [];
     if (data.images !== undefined) {
+      const existingImages = await ProductImage.findAll({ where: { product_id: productId }, transaction });
+      const existingUrls = existingImages.map(img => img.image_url);
+      urlsToDelete = existingUrls.filter(url => !data.images.includes(url));
+
       await ProductImage.destroy({ where: { product_id: productId }, transaction, force: true });
       if (data.images.length > 0) {
         const imageRecords = data.images.map((url, index) => ({
@@ -66,6 +72,10 @@ async function updateProduct(productId, data) {
     }
 
     await transaction.commit();
+
+    if (urlsToDelete.length > 0) {
+      await deleteFromS3(urlsToDelete).catch(err => console.error('Failed to delete old S3 images on update', err));
+    }
     return getProductById(productId);
   } catch (error) {
     await transaction.rollback();
@@ -177,6 +187,16 @@ async function toggleProductStatus(productId) {
 async function deleteProduct(productId) {
   const product = await Product.findByPk(productId);
   if (!product) throw ApiError.notFound('Product not found');
+
+  // Delete associated images
+  const productImages = await ProductImage.findAll({ where: { product_id: productId } });
+  const urls = productImages.map(img => img.image_url);
+
+  if (urls.length > 0) {
+    await deleteFromS3(urls).catch(err => console.error('Failed to delete S3 images on product delete', err));
+    await ProductImage.destroy({ where: { product_id: productId }, force: true });
+  }
+
   await product.destroy(); // soft delete due to paranoid: true
   return { message: 'Product deleted successfully' };
 }

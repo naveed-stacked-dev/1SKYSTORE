@@ -83,7 +83,18 @@ export default function Profile() {
 
   function openEditAddress(addr) {
     setEditAddress(addr);
-    setAddressForm({ ...addr });
+    // Map existing data strictly to string literals to prevent uncontrolled input warnings
+    setAddressForm({ 
+      full_name: addr.full_name || '', 
+      phone: addr.phone || addr.phone_enc || '', 
+      address_line1: addr.address_line1 || '', 
+      address_line2: addr.address_line2 || '',
+      city: addr.city || '', 
+      state: addr.state || '', 
+      country: addr.country || '', 
+      postal_code: addr.postal_code || '', 
+      is_default: addr.is_default || false 
+    });
     setAddressModal(true);
   }
 
@@ -159,13 +170,14 @@ export default function Profile() {
       <Modal isOpen={addressModal} onClose={() => setAddressModal(false)} title={editAddress ? 'Edit Address' : 'Add Address'}>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Full Name" value={addressForm.full_name} onChange={(e) => setAddressForm({ ...addressForm, full_name: e.target.value })} />
-            <Input label="Phone" value={addressForm.phone} onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })} />
-            <Input label="Address" className="sm:col-span-2" value={addressForm.address_line1} onChange={(e) => setAddressForm({ ...addressForm, address_line1: e.target.value })} />
-            <Input label="City" value={addressForm.city} onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })} />
-            <Input label="State" value={addressForm.state} onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })} />
-            <Input label="Country" value={addressForm.country} onChange={(e) => setAddressForm({ ...addressForm, country: e.target.value })} />
-            <Input label="Postal Code" value={addressForm.postal_code} onChange={(e) => setAddressForm({ ...addressForm, postal_code: e.target.value })} />
+            <Input label="Full Name" value={addressForm.full_name || ''} onChange={(e) => setAddressForm({ ...addressForm, full_name: e.target.value })} />
+            <Input label="Phone" value={addressForm.phone || ''} onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })} />
+            <Input label="Address" className="sm:col-span-2" value={addressForm.address_line1 || ''} onChange={(e) => setAddressForm({ ...addressForm, address_line1: e.target.value })} />
+            <Input label="Address Line 2 (Optional)" className="sm:col-span-2" value={addressForm.address_line2 || ''} onChange={(e) => setAddressForm({ ...addressForm, address_line2: e.target.value })} />
+            <Input label="City" value={addressForm.city || ''} onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })} />
+            <Input label="State" value={addressForm.state || ''} onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })} />
+            <Input label="Country" value={addressForm.country || ''} onChange={(e) => setAddressForm({ ...addressForm, country: e.target.value })} />
+            <Input label="Postal Code" value={addressForm.postal_code || ''} onChange={(e) => setAddressForm({ ...addressForm, postal_code: e.target.value })} />
           </div>
           <Button onClick={handleSaveAddress} loading={saving}>{editAddress ? 'Update' : 'Save'}</Button>
         </div>

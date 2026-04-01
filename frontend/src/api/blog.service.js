@@ -1,8 +1,8 @@
 import API from './axios';
 
 const blogService = {
-  getBlogs: (params = {}) => API.get('/blogs', { params }),
-  getBlogBySlug: (slug) => API.get(`/blogs/${slug}`),
+  getBlogs: (params = {}, config = {}) => API.get('/blogs', { params, ...config }),
+  getBlogBySlug: (slug, config = {}) => API.get(`/blogs/${slug}`, config),
 
   // Admin
   adminGetBlogs: (params = {}) => API.get('/admin/blogs', { params }),
