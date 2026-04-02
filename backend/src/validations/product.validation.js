@@ -26,7 +26,6 @@ const createProduct = {
     tags: Joi.array().items(Joi.string()).optional(),
     hsn_code: Joi.string().max(20).optional(),
     gst_percentage: Joi.number().min(0).max(100).optional(),
-    images: Joi.array().items(Joi.string().uri()).optional(),
   }),
 };
 
@@ -56,7 +55,7 @@ const updateProduct = {
     tags: Joi.array().items(Joi.string()).optional(),
     hsn_code: Joi.string().max(20).optional(),
     gst_percentage: Joi.number().min(0).max(100).optional(),
-    images: Joi.array().items(Joi.string().uri()).optional(),
+    retainedImages: Joi.string().optional(),
   }),
 };
 

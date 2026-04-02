@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { pageTransition } from '@/animations/variants';
 import DataTable from '@/components/tables/DataTable';
@@ -49,6 +50,7 @@ export default function ProductList() {
       }
       const res = await productService.getAll(params);
       const data = res.data?.data || res.data;
+      console.log(data);
       setProducts(Array.isArray(data) ? data : data?.products || data?.rows || []);
       setTotalPages(data?.totalPages || data?.total_pages || Math.ceil((data?.total || data?.count || 0) / 10) || 1);
     } catch {
@@ -113,14 +115,20 @@ export default function ProductList() {
       key: 'name',
       label: 'Product',
       sortable: true,
-      render: (val, row) => (
-        <div className="flex items-center gap-3">
-          {row.images?.[0] || row.image ? (
-            <img
-              src={row.images?.[0] || row.image}
-              alt={val}
-              className="w-10 h-10 rounded-lg object-cover bg-neutral-100 dark:bg-neutral-800"
-            />
+      render: (val, row) => {
+        let imageUrl = row.image;
+        if (row.images && row.images.length > 0) {
+          imageUrl = typeof row.images[0] === 'string' ? row.images[0] : row.images[0].image_url;
+        }
+
+        return (
+          <div className="flex items-center gap-3">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={val}
+                className="w-10 h-10 rounded-lg object-cover bg-neutral-100 dark:bg-neutral-800"
+              />
           ) : (
             <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
               <Eye className="w-4 h-4 text-neutral-400" />
@@ -130,8 +138,9 @@ export default function ProductList() {
             <p className="font-medium text-neutral-800 dark:text-neutral-200">{truncate(val, 30)}</p>
             <p className="text-xs text-neutral-400">{row.sku}</p>
           </div>
-        </div>
-      ),
+          </div>
+        );
+      },
     },
     {
       key: 'category',
@@ -177,6 +186,12 @@ export default function ProductList() {
       width: '100px',
       render: (_, row) => (
         <div className="flex items-center gap-1">
+          <Link
+            to={`/admin/products/${row.id}`}
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 transition-colors"
+          >
+            <Eye className="w-4 h-4" />
+          </Link>
           <button
             onClick={() => { setEditProduct(row); setShowForm(true); }}
             className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 transition-colors"

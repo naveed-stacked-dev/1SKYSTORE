@@ -1,4 +1,4 @@
-const { DeleteObjectsCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { PutObjectCommand, DeleteObjectsCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { s3Client, bucket } = require('../config/s3');
 
 /**
@@ -35,4 +35,24 @@ async function deleteFromS3(urls) {
   }
 }
 
-module.exports = { deleteFromS3 };
+/**
+ * Helper to upload a buffer to S3
+ * @param {Buffer} buffer - File buffer
+ * @param {string} mimetype - File mime type
+ * @param {string} key - S3 object key
+ * @returns {Promise<string>} Uploaded file URL
+ */
+async function uploadBufferToS3(buffer, mimetype, key) {
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    Body: buffer,
+    ContentType: mimetype,
+  });
+  await s3Client.send(command);
+  
+  const region = process.env.AWS_REGION || 'ap-south-1';
+  return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+}
+
+module.exports = { deleteFromS3, uploadBufferToS3 };

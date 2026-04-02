@@ -6,6 +6,7 @@ import AdminLayout from '@/components/layout/AdminLayout';
 const Login = lazy(() => import('@/pages/Login'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const ProductList = lazy(() => import('@/pages/products/ProductList'));
+const ProductDetail = lazy(() => import('@/pages/products/ProductDetail'));
 const OrderList = lazy(() => import('@/pages/orders/OrderList'));
 const OrderDetail = lazy(() => import('@/pages/orders/OrderDetail'));
 const Customers = lazy(() => import('@/pages/Customers'));
@@ -44,6 +45,7 @@ export default function AppRoutes() {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<ProductList />} />
+          <Route path="products/:id" element={<ProductDetail />} />
           <Route path="orders" element={<OrderList />} />
           <Route path="orders/:id" element={<OrderDetail />} />
           <Route path="customers" element={<Customers />} />

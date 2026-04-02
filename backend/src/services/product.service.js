@@ -3,12 +3,12 @@ const XLSX = require('xlsx');
 const { Product, ProductImage, ImportLog, sequelize } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { getPagination, getPaginationMeta } = require('../utils/pagination');
-const { deleteFromS3 } = require('../utils/s3Utils');
+const { deleteFromS3, uploadBufferToS3 } = require('../utils/s3Utils');
 
 /**
  * Create a new product with images
  */
-async function createProduct(data) {
+async function createProduct(data, files) {
   const existingSku = await Product.findOne({ where: { sku: data.sku } });
   if (existingSku) throw ApiError.conflict(`Product with SKU '${data.sku}' already exists`);
 
@@ -16,9 +16,17 @@ async function createProduct(data) {
   try {
     const product = await Product.create(data, { transaction });
 
-    // Create product images if provided
-    if (data.images && data.images.length > 0) {
-      const imageRecords = data.images.map((url, index) => ({
+    // Upload files directly to S3 within transaction context if present
+    if (files && files.length > 0) {
+      const imageUrls = await Promise.all(
+        files.map(async (file, index) => {
+          const ext = file.originalname.split('.').pop() || 'jpg';
+          const key = `products/${product.sku}/${Date.now()}-${index}.${ext}`;
+          return await uploadBufferToS3(file.buffer, file.mimetype, key);
+        })
+      );
+
+      const imageRecords = imageUrls.map((url, index) => ({
         product_id: product.id,
         image_url: url,
         is_primary: index === 0,
@@ -39,7 +47,7 @@ async function createProduct(data) {
 /**
  * Update a product
  */
-async function updateProduct(productId, data) {
+async function updateProduct(productId, data, files) {
   const product = await Product.findByPk(productId);
   if (!product) throw ApiError.notFound('Product not found');
 
@@ -49,32 +57,59 @@ async function updateProduct(productId, data) {
   }
 
   const transaction = await sequelize.transaction();
+  let urlsToDelete = [];
   try {
     await product.update(data, { transaction });
 
-    // Update images if provided
-    let urlsToDelete = [];
-    if (data.images !== undefined) {
-      const existingImages = await ProductImage.findAll({ where: { product_id: productId }, transaction });
-      const existingUrls = existingImages.map(img => img.image_url);
-      urlsToDelete = existingUrls.filter(url => !data.images.includes(url));
-
-      await ProductImage.destroy({ where: { product_id: productId }, transaction, force: true });
-      if (data.images.length > 0) {
-        const imageRecords = data.images.map((url, index) => ({
-          product_id: productId,
-          image_url: url,
-          is_primary: index === 0,
-          sort_order: index,
-        }));
-        await ProductImage.bulkCreate(imageRecords, { transaction });
+    // Handle existing images
+    const existingImages = await ProductImage.findAll({ where: { product_id: productId }, transaction });
+    let retainedImages = existingImages.map(img => img.image_url);
+    
+    if (data.retainedImages) {
+      try {
+        retainedImages = JSON.parse(data.retainedImages);
+      } catch (err) {
+        /* ignore parsing error */
       }
+    }
+
+    // Determine images that user explicitly removed
+    urlsToDelete = existingImages
+      .map(img => img.image_url)
+      .filter(url => !retainedImages.includes(url));
+
+    // Process new uploaded files
+    let newImageUrls = [];
+    if (files && files.length > 0) {
+      newImageUrls = await Promise.all(
+        files.map(async (file, index) => {
+          const ext = file.originalname.split('.').pop() || 'jpg';
+          const key = `products/${product.sku}/${Date.now()}-${index}.${ext}`;
+          return await uploadBufferToS3(file.buffer, file.mimetype, key);
+        })
+      );
+    }
+
+    // Combine retained and newly uploaded images in order
+    const finalImageUrls = [...retainedImages, ...newImageUrls];
+
+    // Wipe old DB records and recreate them to ensure `sort_order` and `is_primary` are updated properly
+    await ProductImage.destroy({ where: { product_id: productId }, transaction, force: true });
+    
+    if (finalImageUrls.length > 0) {
+      const imageRecords = finalImageUrls.map((url, index) => ({
+        product_id: productId,
+        image_url: url,
+        is_primary: index === 0,
+        sort_order: index,
+      }));
+      await ProductImage.bulkCreate(imageRecords, { transaction });
     }
 
     await transaction.commit();
 
     if (urlsToDelete.length > 0) {
-      await deleteFromS3(urlsToDelete).catch(err => console.error('Failed to delete old S3 images on update', err));
+      deleteFromS3(urlsToDelete).catch(err => console.error('Failed to delete old S3 images on update', err));
     }
     return getProductById(productId);
   } catch (error) {
@@ -188,17 +223,29 @@ async function deleteProduct(productId) {
   const product = await Product.findByPk(productId);
   if (!product) throw ApiError.notFound('Product not found');
 
-  // Delete associated images
-  const productImages = await ProductImage.findAll({ where: { product_id: productId } });
-  const urls = productImages.map(img => img.image_url);
+  const transaction = await sequelize.transaction();
+  let urls = [];
+  try {
+    // Delete associated images
+    const productImages = await ProductImage.findAll({ where: { product_id: productId }, transaction });
+    urls = productImages.map(img => img.image_url);
 
-  if (urls.length > 0) {
-    await deleteFromS3(urls).catch(err => console.error('Failed to delete S3 images on product delete', err));
-    await ProductImage.destroy({ where: { product_id: productId }, force: true });
+    if (urls.length > 0) {
+      await ProductImage.destroy({ where: { product_id: productId }, transaction, force: true });
+    }
+
+    await product.destroy({ transaction }); // soft delete due to paranoid: true
+    
+    await transaction.commit();
+    
+    if (urls.length > 0) {
+      deleteFromS3(urls).catch(err => console.error('Failed to delete S3 images on product delete', err));
+    }
+    return { message: 'Product deleted successfully' };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
   }
-
-  await product.destroy(); // soft delete due to paranoid: true
-  return { message: 'Product deleted successfully' };
 }
 
 /**
@@ -250,6 +297,8 @@ async function bulkImport(fileBuffer, adminId, filename) {
       const row = rows[i];
       const rowNum = i + 2; // +2 for header row + 0-index
 
+      console.log(`${i + 1} ${row.name}`);
+
       // Validate required fields
       if (!row.name || !row.sku || row.price_usd === undefined || row.price_inr === undefined) {
         errors.push({ row: rowNum, message: 'Missing required fields: name, sku, price_usd, price_inr' });
@@ -264,6 +313,14 @@ async function bulkImport(fileBuffer, adminId, filename) {
       }
 
       try {
+        const tags = [];
+        if (row.treatments) {
+          tags.push(...row.treatments.split(',').map(t => t.trim()));
+        }
+        if (row.size) {
+          tags.push(`Size: ${row.size}`);
+        }
+
         const product = await Product.create({
           name: row.name,
           sku: row.sku,
@@ -271,17 +328,23 @@ async function bulkImport(fileBuffer, adminId, filename) {
           short_description: row.short_description || null,
           price_usd: parseFloat(row.price_usd) || 0,
           price_inr: parseFloat(row.price_inr) || 0,
-          compare_at_price_usd: row.compare_at_price_usd ? parseFloat(row.compare_at_price_usd) : null,
-          compare_at_price_inr: row.compare_at_price_inr ? parseFloat(row.compare_at_price_inr) : null,
+          compare_at_price_usd: null,
+          compare_at_price_inr: null,
           category: row.category || null,
           brand: row.brand || null,
-          stock: parseInt(row.stock, 10) || 0,
-          weight: row.weight ? parseFloat(row.weight) : null,
-          is_active: row.is_active !== undefined ? Boolean(row.is_active) : true,
-          hsn_code: row.hsn_code || null,
-          gst_percentage: row.gst_percentage ? parseFloat(row.gst_percentage) : 18,
+          stock: 0,
+          weight: row.weight_gm !== undefined ? parseFloat(row.weight_gm) : null,
+          dimensions: (row.length_cm || row.width_cm || row.height_cm) ? {
+            length: row.length_cm ? parseFloat(row.length_cm) : null,
+            width: row.width_cm ? parseFloat(row.width_cm) : null,
+            height: row.height_cm ? parseFloat(row.height_cm) : null
+          } : null,
+          is_active: row.active !== undefined ? Boolean(row.active) : true,
+          hsn_code: row.hsn_code ? String(row.hsn_code) : null,
+          gst_percentage: row.igst !== undefined ? parseFloat(row.igst) : (row.cgst && row.sgst ? parseFloat(row.cgst) + parseFloat(row.sgst) : 18),
           meta_title: row.meta_title || null,
           meta_description: row.meta_description || null,
+          tags: tags,
         }, { transaction });
 
         // Parse comma-separated image URLs
@@ -300,6 +363,7 @@ async function bulkImport(fileBuffer, adminId, filename) {
 
         successCount++;
       } catch (err) {
+        console.error(`Error saving product ${row.sku} at row ${rowNum}:`, err.message || err);
         errors.push({ row: rowNum, sku: row.sku, message: err.message });
       }
     }

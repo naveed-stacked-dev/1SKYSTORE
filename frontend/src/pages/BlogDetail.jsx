@@ -69,9 +69,9 @@ export default function BlogDetail() {
           </span>
         </div>
 
-        {blog.image && (
+        {blog.cover_image_url && (
           <img
-            src={blog.image}
+            src={blog.cover_image_url}
             alt={blog.title}
             className="w-full rounded-2xl mt-8 aspect-video object-cover"
           />

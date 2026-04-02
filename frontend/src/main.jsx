@@ -8,11 +8,13 @@ import { CartProvider } from '@/context/CartContext';
 import { GeoProvider } from '@/context/GeoContext';
 import { UIProvider } from '@/context/UIContext';
 import App from './App.jsx';
+import ScrollToTop from './components/ScrollToTop.jsx';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
+      <ScrollToTop />
       <ThemeProvider>
         <UIProvider>
           <AuthProvider>

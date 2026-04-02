@@ -12,12 +12,12 @@ import { Upload, X } from 'lucide-react';
 export default function BlogForm({ blog, onClose }) {
   const isEdit = !!blog;
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [coverFile, setCoverFile] = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
   const [form, setForm] = useState({
     title: '',
     content: '',
     excerpt: '',
-    cover_image_url: '',
     is_published: false,
     meta_title: '',
     meta_description: '',
@@ -31,12 +31,12 @@ export default function BlogForm({ blog, onClose }) {
         title: blog.title || '',
         content: blog.content || '',
         excerpt: blog.excerpt || '',
-        cover_image_url: blog.cover_image_url || '',
         is_published: blog.is_published ?? false,
         meta_title: blog.meta_title || '',
         meta_description: blog.meta_description || '',
         tags: Array.isArray(blog.tags) ? blog.tags.join(', ') : (blog.tags || ''),
       });
+      setCoverPreview(blog.cover_image_url || null);
     }
   }, [blog]);
 
@@ -53,20 +53,16 @@ export default function BlogForm({ blog, onClose }) {
     return Object.keys(errs).length === 0;
   };
 
-  const handleImageUpload = async (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    try {
-      const res = await uploadService.uploadImage(file);
-      const url = res.data?.data?.url || res.data?.url;
-      if (url) onChange('cover_image_url', url);
-      toast.success('Image uploaded');
-    } catch {
-      toast.error('Upload failed');
-    } finally {
-      setUploading(false);
-    }
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
+  };
+
+  const removeImage = () => {
+    setCoverFile(null);
+    setCoverPreview(null);
   };
 
   const handleSubmit = async (e) => {
@@ -78,28 +74,36 @@ export default function BlogForm({ blog, onClose }) {
         ? form.tags.split(',').map((t) => t.trim()).filter(Boolean)
         : [];
 
-      const payload = {
-        title: form.title,
-        content: form.content,
-        excerpt: form.excerpt || undefined,
-        cover_image_url: form.cover_image_url || undefined,
-        is_published: form.is_published,
-        published_at: form.is_published ? new Date().toISOString() : undefined,
-        meta_title: form.meta_title || undefined,
-        meta_description: form.meta_description || undefined,
-        tags: tagsArray,
-      };
+      const formData = new FormData();
+      formData.append('title', form.title);
+      formData.append('content', form.content);
+      if (form.excerpt) formData.append('excerpt', form.excerpt);
+      formData.append('is_published', form.is_published);
+      if (form.meta_title) formData.append('meta_title', form.meta_title);
+      if (form.meta_description) formData.append('meta_description', form.meta_description);
+      
+      if (tagsArray.length > 0) {
+        tagsArray.forEach((tag) => formData.append('tags[]', tag));
+      }
+
+      if (coverFile) {
+        formData.append('images', coverFile);
+      } else if (!coverPreview) {
+        formData.append('retainedImage', '');
+      } else {
+        formData.append('retainedImage', coverPreview);
+      }
 
       if (isEdit) {
-        await blogService.update(blog.id, payload);
+        await blogService.update(blog.id, formData);
         toast.success('Blog updated');
       } else {
-        await blogService.create(payload);
+        await blogService.create(formData);
         toast.success('Blog created');
       }
       onClose(true);
     } catch (err) {
-      toast.error(err?.message || 'Failed to save blog');
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to save blog');
     } finally {
       setLoading(false);
     }
@@ -115,12 +119,12 @@ export default function BlogForm({ blog, onClose }) {
         {/* Cover Image */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Cover Image</label>
-          {form.cover_image_url ? (
+          {coverPreview ? (
             <div className="relative rounded-xl overflow-hidden mb-2 group">
-              <img src={form.cover_image_url} alt="Cover" className="w-full h-40 object-cover" />
+              <img src={coverPreview} alt="Cover" className="w-full h-40 object-cover" />
               <button
                 type="button"
-                onClick={() => onChange('cover_image_url', '')}
+                onClick={removeImage}
                 className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 text-white hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X className="w-4 h-4" />
@@ -133,7 +137,6 @@ export default function BlogForm({ blog, onClose }) {
               <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
             </label>
           )}
-          {uploading && <p className="text-xs text-primary-500 mt-1">Uploading...</p>}
         </div>
 
         {/* Content */}

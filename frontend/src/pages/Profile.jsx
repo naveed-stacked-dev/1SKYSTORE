@@ -161,7 +161,7 @@ export default function Profile() {
         </section>
 
         {/* Logout */}
-        <Button variant="ghost" className="text-error-500 gap-2" onClick={logout}>
+        <Button variant="ghost" className="!text-error-500 bg-error-500/10 hover:bg-error-500/20 gap-2" onClick={logout}>
           <LogOut className="w-4 h-4" /> Sign Out
         </Button>
       </div>

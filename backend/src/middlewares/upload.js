@@ -72,4 +72,13 @@ const uploadExcel = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 }).single('file');
 
-module.exports = { uploadSingle, uploadMultiple, uploadExcel };
+/**
+ * Image upload (to memory for manual S3 processing)
+ */
+const uploadImageMemory = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: imageFilter,
+  limits: { fileSize: MAX_FILE_SIZE },
+}).array('images', 5);
+
+module.exports = { uploadSingle, uploadMultiple, uploadExcel, uploadImageMemory };

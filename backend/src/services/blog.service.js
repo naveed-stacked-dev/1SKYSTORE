@@ -2,33 +2,94 @@ const { Op } = require('sequelize');
 const { Blog, Admin } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { getPagination, getPaginationMeta } = require('../utils/pagination');
+const sequelize = require('../config/database');
+const { uploadBufferToS3, deleteFromS3 } = require('../utils/s3Utils');
 
 /**
  * Create blog (admin)
  */
-async function createBlog(adminId, data) {
-  const blog = await Blog.create({
-    ...data,
-    author_admin_id: adminId,
-    published_at: data.is_published ? new Date() : null,
-  });
-  return blog;
+async function createBlog(adminId, data, files) {
+  const transaction = await sequelize.transaction();
+  try {
+    let cover_image_url = null;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const ext = file.originalname.split('.').pop() || 'jpg';
+      const key = `blogs/${Date.now()}.${ext}`;
+      cover_image_url = await uploadBufferToS3(file.buffer, file.mimetype, key);
+    }
+
+    const isPublished = data.is_published === 'true' || data.is_published === true;
+    
+    const blog = await Blog.create({
+      ...data,
+      cover_image_url,
+      author_admin_id: adminId,
+      published_at: isPublished ? new Date() : null,
+      is_published: isPublished,
+    }, { transaction });
+
+    await transaction.commit();
+    return blog;
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 }
 
 /**
  * Update blog (admin)
  */
-async function updateBlog(blogId, data) {
+async function updateBlog(blogId, data, files) {
   const blog = await Blog.findByPk(blogId);
   if (!blog) throw ApiError.notFound('Blog not found');
 
-  // Set published_at when first published
-  if (data.is_published && !blog.is_published) {
-    data.published_at = new Date();
-  }
+  const transaction = await sequelize.transaction();
+  let urlToDelete = null;
 
-  await blog.update(data);
-  return blog;
+  try {
+    let cover_image_url = blog.cover_image_url;
+    
+    // Check if the user opted to remove the image from UI without uploading a new one
+    if ('retainedImage' in data) {
+      if (!data.retainedImage) {
+        urlToDelete = blog.cover_image_url;
+        cover_image_url = null;
+      }
+    }
+
+    // Process new uploaded file correctly
+    if (files && files.length > 0) {
+      if (cover_image_url) urlToDelete = cover_image_url;
+      const file = files[0];
+      const ext = file.originalname.split('.').pop() || 'jpg';
+      const key = `blogs/${Date.now()}.${ext}`;
+      cover_image_url = await uploadBufferToS3(file.buffer, file.mimetype, key);
+    }
+
+    const isPublished = data.is_published === 'true' || data.is_published === true;
+
+    // Set published_at when first published
+    if (isPublished && !blog.is_published) {
+      data.published_at = new Date();
+    }
+    
+    data.is_published = isPublished;
+    data.cover_image_url = cover_image_url;
+
+    await blog.update(data, { transaction });
+    await transaction.commit();
+    
+    // Async cleanup of the orphaned S3 object
+    if (urlToDelete) {
+      deleteFromS3([urlToDelete]).catch(err => console.error('Failed to completely delete S3 image for blog', err));
+    }
+    
+    return blog;
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 }
 
 /**

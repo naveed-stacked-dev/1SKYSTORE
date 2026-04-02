@@ -54,7 +54,7 @@ export default function BrandHeroGrid({ categories = CATEGORIES }) {
             <h3 className="text-3xl md:text-5xl font-heading font-bold mb-3">{main.title}</h3>
             <p className="text-lg text-white/80 mb-6">{main.subtitle}</p>
             <Link to={`/category/${main.slug}`}>
-              <Button size="lg" variant="ghost" className="bg-white text-neutral-900 hover:bg-neutral-100 hover:text-neutral-900 border-none rounded-full px-8 shadow-sm">
+              <Button size="lg" variant="ghost" className="bg-white text-neutral-900 dark:text-neutral-900 hover:bg-neutral-100 hover:text-neutral-900 border-none rounded-full px-8 shadow-sm">
                 SHOP NOW
               </Button>
             </Link>
@@ -83,7 +83,7 @@ export default function BrandHeroGrid({ categories = CATEGORIES }) {
               <h3 className="text-2xl font-heading font-bold text-white md:text-neutral-900 dark:text-white mb-2">{topRight.title}</h3>
               <p className="text-sm text-white/80 md:text-neutral-600 dark:text-neutral-400 mb-4">{topRight.subtitle}</p>
               <Link to={`/category/${topRight.slug}`}>
-                <Button size="sm" variant="ghost" className="border-2 border-white md:border-neutral-900 dark:border-white text-white md:text-neutral-900 dark:text-white hover:bg-white/20 rounded-full px-6 bg-white/10 backdrop-blur-md shadow-sm">
+                <Button size="sm" variant="ghost" className="border-2 border-white md:border-neutral-900 dark:border-white text-white md:text-neutral-900 dark:text-neutral-900 hover:bg-white rounded-full px-6 bg-white backdrop-blur-md shadow-sm">
                   SHOP NOW
                 </Button>
               </Link>
@@ -111,7 +111,7 @@ export default function BrandHeroGrid({ categories = CATEGORIES }) {
               <h3 className="text-2xl font-heading font-bold text-white md:text-neutral-900 dark:text-white mb-2">{bottomRight.title}</h3>
               <p className="text-sm text-white/80 md:text-neutral-600 dark:text-neutral-400 mb-4">{bottomRight.subtitle}</p>
               <Link to={`/category/${bottomRight.slug}`}>
-                <Button size="sm" variant="ghost" className="border-2 border-white md:border-neutral-900 dark:border-white text-white md:text-neutral-900 dark:text-white hover:bg-white/20 rounded-full px-6 bg-white/10 backdrop-blur-md shadow-sm">
+                <Button size="sm" variant="ghost" className="border-2 border-white md:border-neutral-900 dark:border-white text-white md:text-neutral-900 dark:text-neutral-900 hover:bg-white rounded-full px-6 bg-white backdrop-blur-md shadow-sm">
                   SHOP NOW
                 </Button>
               </Link>

@@ -152,10 +152,10 @@ export default function Dashboard() {
                 to={`/blog/${blog.slug || blog.id}`}
                 className="group rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:shadow-card transition-all"
               >
-                {blog.image && (
+                {blog.cover_image_url && (
                   <div className="aspect-video overflow-hidden">
                     <img
-                      src={blog.image}
+                      src={blog.cover_image_url}
                       alt={blog.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"

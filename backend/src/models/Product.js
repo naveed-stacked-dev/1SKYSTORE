@@ -125,13 +125,13 @@ const Product = sequelize.define('Product', {
   ],
 });
 
-// Auto-generate slug from name before creating
-Product.beforeCreate(async (product) => {
-  if (!product.slug) {
+// Auto-generate slug from name before validation to satisfy non-null constraint
+Product.beforeValidate(async (product, options) => {
+  if (!product.slug && product.name) {
     let baseSlug = slugify(product.name, { lower: true, strict: true });
     let slug = baseSlug;
     let counter = 1;
-    while (await Product.findOne({ where: { slug }, paranoid: false })) {
+    while (await Product.findOne({ where: { slug }, transaction: options.transaction, paranoid: false })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }

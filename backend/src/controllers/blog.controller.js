@@ -27,12 +27,16 @@ exports.adminGetBlog = catchAsync(async (req, res) => {
 });
 
 exports.createBlog = catchAsync(async (req, res) => {
-  const blog = await blogService.createBlog(req.admin.id, req.body);
+  const blogData = { ...req.body };
+  // the middleware uses multer.array('images') by default across the app 
+  // so the file comes in req.files
+  const blog = await blogService.createBlog(req.admin.id, blogData, req.files);
   ApiResponse.created(res, 'Blog created', blog);
 });
 
 exports.updateBlog = catchAsync(async (req, res) => {
-  const blog = await blogService.updateBlog(req.params.id, req.body);
+  const blogData = { ...req.body };
+  const blog = await blogService.updateBlog(req.params.id, blogData, req.files);
   ApiResponse.success(res, 'Blog updated', blog);
 });
 

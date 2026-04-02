@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Minus, Plus, Check, Truck, Shield, RotateCcw } from 'lucide-react';
+import { ShoppingBag, Minus, Plus, Check, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import productService from '@/api/product.service';
 import { useCart } from '@/context/CartContext';
 import { useGeo } from '@/context/GeoContext';
@@ -23,6 +23,7 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     loadProduct();
@@ -91,17 +92,34 @@ export default function ProductDetail() {
   }
 
   const images = product.images?.length > 0
-    ? product.images
+    ? product.images.map(img => typeof img === 'string' ? img : img.image_url)
     : [product.image || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&h=600&fit=crop'];
+
 
   const tabs = [
     {
       id: 'description',
       label: 'Description',
       content: (
-        <div className="prose prose-sm dark:prose-invert max-w-none text-neutral-600 dark:text-neutral-400 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: product.description || '<p>No description available.</p>' }}
-        />
+        <div>
+          <div className="relative">
+            <div 
+              className={`prose prose-sm dark:prose-invert max-w-none text-neutral-600 dark:text-neutral-400 leading-relaxed overflow-hidden transition-all duration-500 ${isExpanded ? 'max-h-[3000px]' : 'max-h-48'}`}
+              dangerouslySetInnerHTML={{ __html: product.description || '<p>No description available.</p>' }}
+            />
+            {!isExpanded && product.description?.length > 400 && (
+              <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white dark:from-neutral-950 to-transparent pointer-events-none transition-opacity duration-300" />
+            )}
+          </div>
+          {product.description?.length > 400 && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-4 text-sm font-bold text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 transition-colors flex items-center gap-1 uppercase tracking-wider relative z-10"
+            >
+              {isExpanded ? 'Read Less' : 'Read More'}
+            </button>
+          )}
+        </div>
       ),
     },
     {
@@ -124,12 +142,28 @@ export default function ProductDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14">
           {/* Image Gallery */}
           <div className="space-y-4">
-            <div className="aspect-square rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group">
               <img
                 src={images[selectedImage]}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-500"
               />
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 dark:bg-black/50 text-neutral-800 dark:text-neutral-200 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-sm"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 dark:bg-black/50 text-neutral-800 dark:text-neutral-200 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-sm"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
             </div>
             {images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto no-scrollbar">

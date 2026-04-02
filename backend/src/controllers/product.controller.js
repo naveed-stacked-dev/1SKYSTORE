@@ -54,45 +54,16 @@ exports.adminGetProduct = catchAsync(async (req, res) => {
 });
 
 exports.createProduct = catchAsync(async (req, res) => {
-  let images = [];
-  if (req.body.images) {
-    images = Array.isArray(req.body.images) ? req.body.images : [req.body.images];
-  }
-  if (req.files && req.files.length > 0) {
-    const fileUrls = req.files.map((file) => file.location);
-    images = [...images, ...fileUrls];
-  }
-
-  const productData = { ...req.body, images };
-  const product = await productService.createProduct(productData);
+  delete req.body.images; // ensure no images array from body is used
+  const productData = { ...req.body };
+  const product = await productService.createProduct(productData, req.files || []);
   ApiResponse.created(res, 'Product created', product);
 });
 
 exports.updateProduct = catchAsync(async (req, res) => {
-  let images = [];
-  let hasImagesUpdate = false;
-
-  if (req.body.images !== undefined) {
-    hasImagesUpdate = true;
-    if (Array.isArray(req.body.images)) {
-      images = req.body.images;
-    } else if (req.body.images) {
-      images = [req.body.images];
-    }
-  }
-
-  if (req.files && req.files.length > 0) {
-    hasImagesUpdate = true;
-    const fileUrls = req.files.map((file) => file.location);
-    images = [...images, ...fileUrls];
-  }
-
+  delete req.body.images; // ensure no images array from body is used
   const productData = { ...req.body };
-  if (hasImagesUpdate) {
-    productData.images = images;
-  }
-
-  const product = await productService.updateProduct(req.params.id, productData);
+  const product = await productService.updateProduct(req.params.id, productData, req.files || []);
   ApiResponse.success(res, 'Product updated', product);
 });
 

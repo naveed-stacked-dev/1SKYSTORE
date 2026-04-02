@@ -58,9 +58,9 @@ export default function BlogList() {
                   to={`/blog/${blog.slug || blog.id}`}
                   className="group block rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:shadow-card transition-shadow"
                 >
-                  {blog.image && (
+                  {blog.cover_image_url && (
                     <div className="aspect-video overflow-hidden bg-neutral-100 dark:bg-neutral-800">
-                      <img src={blog.image} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      <img src={blog.cover_image_url} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                     </div>
                   )}
                   <div className="p-5">

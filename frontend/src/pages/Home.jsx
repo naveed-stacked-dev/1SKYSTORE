@@ -241,25 +241,25 @@ export default function Home() {
               label="Popular"
               title={<span className="flex items-center gap-2"><TrendingUp className="w-6 h-6 text-primary-500" /> Trending Now</span>}
             />
-          </div>
-          <div className="mt-8 overflow-x-auto no-scrollbar">
-            <motion.div
-              className="flex gap-5 px-4 sm:px-6 lg:px-8 pb-4"
-              variants={staggerContainer}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true }}
-            >
-              {trendingProducts.map((product, i) => (
-                <motion.div
-                  key={product.id}
-                  variants={staggerItem}
-                  className="flex-shrink-0 w-[260px] sm:w-[280px]"
-                >
-                  <ProductCard product={product} />
-                </motion.div>
-              ))}
-            </motion.div>
+            <div className="mt-8 overflow-x-auto no-scrollbar pb-4">
+              <motion.div
+                className="flex gap-5"
+                variants={staggerContainer}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true }}
+              >
+                {trendingProducts.map((product, i) => (
+                  <motion.div
+                    key={product.id}
+                    variants={staggerItem}
+                    className="flex-shrink-0 w-[260px] sm:w-[280px]"
+                  >
+                    <ProductCard product={product} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
           </div>
         </section>
       )}
@@ -276,18 +276,24 @@ export default function Home() {
               whileInView="animate"
               viewport={{ once: true }}
             >
-              {brands.slice(0, 6).map((brand, i) => (
-                <motion.div key={brand.id || brand.name || i} variants={staggerItem}>
-                  <Link
-                    to={`/brand/${brand.slug || encodeURIComponent(brand.name)}`}
-                    className="flex items-center justify-center h-20 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 hover:shadow-card hover:border-primary-200 dark:hover:border-primary-800 transition-all"
-                  >
-                    <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                      {brand.name}
-                    </span>
-                  </Link>
-                </motion.div>
-              ))}
+              {brands.slice(0, 6).map((brand, i) => {
+                const name = typeof brand === 'string' ? brand : brand.name;
+                const slug = typeof brand === 'string' ? encodeURIComponent(brand) : (brand.slug || encodeURIComponent(brand.name));
+                const key = typeof brand === 'string' ? brand : (brand.id || brand.name || i);
+                
+                return (
+                  <motion.div key={key} variants={staggerItem}>
+                    <Link
+                      to={`/brand/${slug}`}
+                      className="flex items-center justify-center h-20 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 hover:shadow-card hover:border-primary-200 dark:hover:border-primary-800 transition-all"
+                    >
+                      <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                        {name}
+                      </span>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </div>
         </section>
@@ -309,10 +315,10 @@ export default function Home() {
                   to={`/blog/${blog.slug || blog.id}`}
                   className="group rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:shadow-card transition-shadow"
                 >
-                  {blog.image && (
+                  {blog.cover_image_url && (
                     <div className="aspect-video overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                       <img
-                        src={blog.image}
+                        src={blog.cover_image_url}
                         alt={blog.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
