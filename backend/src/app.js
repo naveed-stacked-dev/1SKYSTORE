@@ -14,7 +14,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:3000',
-  'https://oneskystore-1-frontend.onrender.com'
+  'https://oneskystore-1-frontend.onrender.com',
+  'https://oneskystore-1-admin.onrender.com'
 ].filter(Boolean);
 
 app.use(cors({
