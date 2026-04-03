@@ -1,14 +1,41 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { pageTransition } from '@/animations/variants';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import Button from '@/components/ui/Button';
 import Toggle from '@/components/ui/Toggle';
+import Modal from '@/components/ui/Modal';
+import Input from '@/components/ui/Input';
 import { User, Palette, Shield, Bell } from 'lucide-react';
+import toast from 'react-hot-toast';
+import authService from '@/api/auth.service';
 
 export default function Settings() {
   const { admin } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwords, setPasswords] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [loading, setLoading] = useState(false);
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      return toast.error('New passwords do not match');
+    }
+    setLoading(true);
+    try {
+      await authService.changePassword({ oldPassword: passwords.oldPassword, newPassword: passwords.newPassword });
+      toast.success('Password changed successfully');
+      setShowPasswordModal(false);
+      setPasswords({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to change password');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <motion.div {...pageTransition}>
@@ -67,14 +94,7 @@ export default function Settings() {
                 <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">Change Password</p>
                 <p className="text-xs text-neutral-400">Update your admin password</p>
               </div>
-              <Button variant="outline" size="sm">Change</Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">Two-Factor Auth</p>
-                <p className="text-xs text-neutral-400">Add an extra layer of security</p>
-              </div>
-              <Button variant="outline" size="sm" disabled>Coming Soon</Button>
+              <Button variant="outline" size="sm" onClick={() => setShowPasswordModal(true)}>Change</Button>
             </div>
           </div>
         </div>
@@ -103,6 +123,38 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      <Modal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} title="Change Password" size="sm">
+        <form onSubmit={handlePasswordChange} className="space-y-4 pt-4">
+          <Input 
+            label="Current Password" 
+            type="password" 
+            value={passwords.oldPassword} 
+            onChange={e => setPasswords({...passwords, oldPassword: e.target.value})} 
+            required 
+          />
+          <Input 
+            label="New Password" 
+            type="password" 
+            value={passwords.newPassword} 
+            onChange={e => setPasswords({...passwords, newPassword: e.target.value})} 
+            required 
+            minLength={8}
+          />
+          <Input 
+            label="Confirm New Password" 
+            type="password" 
+            value={passwords.confirmPassword} 
+            onChange={e => setPasswords({...passwords, confirmPassword: e.target.value})} 
+            required 
+            minLength={8}
+          />
+          <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+            <Button type="button" variant="ghost" onClick={() => setShowPasswordModal(false)}>Cancel</Button>
+            <Button type="submit" disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
+          </div>
+        </form>
+      </Modal>
     </motion.div>
   );
 }

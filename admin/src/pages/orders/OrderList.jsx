@@ -27,7 +27,7 @@ export default function OrderList() {
       const res = await orderService.getAll(params);
       const data = res.data?.data || res.data;
       setOrders(Array.isArray(data) ? data : data?.orders || data?.rows || []);
-      setTotalPages(data?.totalPages || data?.total_pages || 1);
+      setTotalPages(res.data?.pagination?.totalPages || data?.totalPages || data?.total_pages || 1);
     } catch {
       toast.error('Failed to load orders');
     } finally {

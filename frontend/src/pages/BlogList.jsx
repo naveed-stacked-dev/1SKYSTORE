@@ -1,30 +1,43 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar } from 'lucide-react';
 import blogService from '@/api/blog.service';
 import { BlogCardSkeleton } from '@/components/ui/Skeleton';
+import Pagination from '@/components/ui/Pagination';
 import { pageTransition, staggerContainer, staggerItem } from '@/animations/variants';
 
 export default function BlogList() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const page = parseInt(searchParams.get('page') || '1');
 
   useEffect(() => {
     document.title = 'Blog — 1SkyStore';
     loadBlogs();
-  }, []);
+  }, [page]);
 
   async function loadBlogs() {
     try {
-      const res = await blogService.getBlogs();
+      setLoading(true);
+      const res = await blogService.getBlogs({ page, pageSize: 9 });
       const data = res.data?.data || res.data;
       setBlogs(Array.isArray(data) ? data : data?.blogs || data?.rows || []);
+      setTotalPages(res.data?.pagination?.totalPages || data?.totalPages || data?.total_pages || Math.ceil((data?.count || 0) / 9) || 1);
     } catch {
       setBlogs([]);
     } finally {
       setLoading(false);
     }
+  }
+
+  function handlePageChange(newPage) {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', String(newPage));
+    setSearchParams(newParams);
   }
 
   return (
@@ -46,47 +59,55 @@ export default function BlogList() {
             <p className="text-neutral-400">No blog posts yet</p>
           </div>
         ) : (
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-          >
-            {blogs.map((blog) => (
-              <motion.div key={blog.id} variants={staggerItem}>
-                <Link
-                  to={`/blog/${blog.slug || blog.id}`}
-                  className="group block rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:shadow-card transition-shadow"
-                >
-                  {blog.cover_image_url && (
-                    <div className="aspect-video overflow-hidden bg-neutral-100 dark:bg-neutral-800">
-                      <img src={blog.cover_image_url} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                    </div>
-                  )}
-                  <div className="p-5">
-                    {blog.category && (
-                      <span className="text-xs font-medium text-primary-500 uppercase tracking-wider">{blog.category}</span>
+          <>
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              {blogs.map((blog) => (
+                <motion.div key={blog.id} variants={staggerItem}>
+                  <Link
+                    to={`/blog/${blog.slug || blog.id}`}
+                    className="group block rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:shadow-card transition-shadow"
+                  >
+                    {blog.cover_image_url && (
+                      <div className="aspect-video overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                        <img src={blog.cover_image_url} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      </div>
                     )}
-                    <h2 className="mt-2 text-lg font-semibold text-neutral-800 dark:text-neutral-100 line-clamp-2 group-hover:text-primary-500 transition-colors">
-                      {blog.title}
-                    </h2>
-                    <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400 line-clamp-3">
-                      {blog.excerpt || blog.description}
-                    </p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-neutral-400">
-                        <Calendar className="w-3 h-3" />
-                        {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : ''}
-                      </span>
-                      <span className="flex items-center gap-1 text-xs font-medium text-primary-500">
-                        Read more <ArrowRight className="w-3 h-3" />
-                      </span>
+                    <div className="p-5">
+                      {blog.category && (
+                        <span className="text-xs font-medium text-primary-500 uppercase tracking-wider">{blog.category}</span>
+                      )}
+                      <h2 className="mt-2 text-lg font-semibold text-neutral-800 dark:text-neutral-100 line-clamp-2 group-hover:text-primary-500 transition-colors">
+                        {blog.title}
+                      </h2>
+                      <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400 line-clamp-3">
+                        {blog.excerpt || blog.description}
+                      </p>
+                      <div className="mt-4 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5 text-xs text-neutral-400">
+                          <Calendar className="w-3 h-3" />
+                          {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString() : ''}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs font-medium text-primary-500">
+                          Read more <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </>
         )}
       </div>
     </motion.div>

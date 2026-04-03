@@ -1,30 +1,44 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Package } from 'lucide-react';
 import orderService from '@/api/order.service';
 import OrderCard from '@/components/ecommerce/OrderCard';
 import { Skeleton } from '@/components/ui/Skeleton';
+import Pagination from '@/components/ui/Pagination';
 import { pageTransition, staggerContainer, staggerItem } from '@/animations/variants';
 
 export default function Orders() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const page = parseInt(searchParams.get('page') || '1');
 
   useEffect(() => {
     document.title = 'Orders — 1SkyStore';
     loadOrders();
-  }, []);
+  }, [page]);
 
   async function loadOrders() {
     try {
-      const res = await orderService.getOrders();
+      setLoading(true);
+      const res = await orderService.getOrders({ page, pageSize: 10 });
       const data = res.data?.data || res.data;
       setOrders(Array.isArray(data) ? data : data?.orders || data?.rows || []);
+      setTotalPages(res.data?.pagination?.totalPages || data?.totalPages || data?.total_pages || Math.ceil((data?.count || 0) / 10) || 1);
     } catch {
       setOrders([]);
     } finally {
       setLoading(false);
     }
+  }
+
+  function handlePageChange(newPage) {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', String(newPage));
+    setSearchParams(newParams);
   }
 
   if (loading) {
@@ -46,13 +60,21 @@ export default function Orders() {
           <p className="text-neutral-500">No orders yet</p>
         </div>
       ) : (
-        <motion.div className="space-y-4" variants={staggerContainer} initial="initial" animate="animate">
-          {orders.map((order) => (
-            <motion.div key={order.id} variants={staggerItem}>
-              <OrderCard order={order} />
-            </motion.div>
-          ))}
-        </motion.div>
+        <>
+          <motion.div className="space-y-4" variants={staggerContainer} initial="initial" animate="animate">
+            {orders.map((order) => (
+              <motion.div key={order.id} variants={staggerItem}>
+                <OrderCard order={order} />
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
     </motion.div>
   );

@@ -105,4 +105,18 @@ async function updateAdmin(adminId, data) {
   };
 }
 
-module.exports = { adminLogin, createAdmin, listAdmins, updateAdmin };
+/**
+ * Change admin password
+ */
+async function changePassword(adminId, { oldPassword, newPassword }) {
+  const admin = await Admin.findByPk(adminId);
+  if (!admin) throw ApiError.notFound('Admin not found');
+
+  const isMatch = await admin.comparePassword(oldPassword);
+  if (!isMatch) throw ApiError.badRequest('Incorrect old password');
+
+  admin.password_hash = newPassword;
+  await admin.save();
+}
+
+module.exports = { adminLogin, createAdmin, listAdmins, updateAdmin, changePassword };

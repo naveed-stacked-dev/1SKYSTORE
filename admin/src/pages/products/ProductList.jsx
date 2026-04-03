@@ -52,7 +52,7 @@ export default function ProductList() {
       const data = res.data?.data || res.data;
       console.log(data);
       setProducts(Array.isArray(data) ? data : data?.products || data?.rows || []);
-      setTotalPages(data?.totalPages || data?.total_pages || Math.ceil((data?.total || data?.count || 0) / 10) || 1);
+      setTotalPages(res.data?.pagination?.totalPages || data?.totalPages || data?.total_pages || Math.ceil((data?.total || data?.count || 0) / 10) || 1);
     } catch {
       toast.error('Failed to load products');
     } finally {

@@ -21,3 +21,8 @@ exports.updateAdmin = catchAsync(async (req, res) => {
   const admin = await adminService.updateAdmin(req.params.id, req.body);
   ApiResponse.success(res, 'Admin updated', admin);
 });
+
+exports.changePassword = catchAsync(async (req, res) => {
+  await adminService.changePassword(req.admin.id, req.body);
+  ApiResponse.success(res, 'Password changed successfully');
+});

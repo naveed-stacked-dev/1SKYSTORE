@@ -5,6 +5,7 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import productService from '@/api/product.service';
 import { fetchWithCache } from '@/utils/apiCache';
 import ProductGrid from '@/components/ecommerce/ProductGrid';
+import Pagination from '@/components/ui/Pagination';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import { pageTransition } from '@/animations/variants';
@@ -67,7 +68,7 @@ export default function Shop() {
       const res = await productService.getProducts(params, { signal: controller.signal });
       const data = res.data?.data || res.data;
       setProducts(data?.products || data?.rows || data || []);
-      setTotalPages(data?.totalPages || Math.ceil((data?.count || 0) / 12) || 1);
+      setTotalPages(res.data?.pagination?.totalPages || data?.totalPages || Math.ceil((data?.count || 0) / 12) || 1);
     } catch (err) {
       if (err.name !== 'CanceledError') {
         setProducts([]);
@@ -84,7 +85,9 @@ export default function Shop() {
     } else {
       newParams.delete(key);
     }
-    newParams.set('page', '1');
+    if (key !== 'page') {
+      newParams.set('page', '1');
+    }
     setSearchParams(newParams);
   }
 
@@ -101,8 +104,8 @@ export default function Shop() {
     { value: 'name_asc', label: 'Name: A-Z' },
   ];
 
-  const categoryOptions = categories.map((c) => ({ value: c.slug || c.name, label: c.name }));
-  const brandOptions = brands.map((b) => ({ value: b.slug || b.name, label: b.name }));
+  const categoryOptions = categories.map((c) => (typeof c === 'string' ? { value: c, label: c } : { value: c.slug || c.name, label: c.name }));
+  const brandOptions = brands.map((b) => (typeof b === 'string' ? { value: b, label: b } : { value: b.slug || b.name, label: b.name }));
 
   return (
     <motion.div {...pageTransition} className="min-h-screen">
@@ -168,23 +171,11 @@ export default function Shop() {
             <ProductGrid products={products} loading={loading} />
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-10 flex items-center justify-center gap-2">
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => updateFilter('page', String(i + 1)) || searchParams.set('page', String(i + 1))}
-                    className={`w-10 h-10 rounded-xl text-sm font-medium transition-colors ${
-                      page === i + 1
-                        ? 'bg-primary-500 text-white'
-                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-primary-50 dark:hover:bg-primary-900/20'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-            )}
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => updateFilter('page', String(p))}
+            />
           </div>
         </div>
       </div>
