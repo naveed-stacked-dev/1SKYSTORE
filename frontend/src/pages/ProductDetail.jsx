@@ -1,0 +1,299 @@
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ShoppingBag, Minus, Plus, Check, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import productService from '@/api/product.service';
+import { useCart } from '@/context/CartContext';
+import ProductGrid from '@/components/ecommerce/ProductGrid';
+import RatingStars from '@/components/ecommerce/RatingStars';
+import Tabs from '@/components/ui/Tabs';
+import Button from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { pageTransition } from '@/animations/variants';
+import { formatPrice } from '@/utils/formatPrice';
+import toast from 'react-hot-toast';
+
+export default function ProductDetail() {
+  const { slug } = useParams();
+  const { addToCart } = useCart();
+  const [product, setProduct] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [adding, setAdding] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    loadProduct();
+    window.scrollTo(0, 0);
+  }, [slug]);
+
+  async function loadProduct() {
+    try {
+      setLoading(true);
+      const res = await productService.getProductBySlug(slug);
+      const data = res.data?.data || res.data;
+      setProduct(data);
+      document.title = `${data?.name || 'Product'} — 1SkyStore`;
+
+      // Load related products
+      if (data?.category) {
+        try {
+          const relRes = await productService.getProducts({ category: data.category, pageSize: 4 });
+          const relData = relRes.data?.data || relRes.data;
+          const relProducts = relData?.products || relData?.rows || relData || [];
+          setRelated(relProducts.filter((p) => p.id !== data.id).slice(0, 4));
+        } catch {}
+      }
+    } catch {
+      setProduct(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    try {
+      setAdding(true);
+      await addToCart(product, quantity);
+      toast.success('Added to cart!');
+    } catch {
+      toast.error('Failed to add');
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <Skeleton variant="card" className="h-[500px]" />
+          <div className="space-y-4">
+            <Skeleton variant="line" className="w-1/3" />
+            <Skeleton variant="title" className="h-8" />
+            <Skeleton variant="text" className="w-1/4" />
+            <Skeleton variant="text" className="w-full h-24" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className="text-neutral-500 text-lg">Product not found</p>
+      </div>
+    );
+  }
+
+  const images = product.images?.length > 0
+    ? product.images.map(img => typeof img === 'string' ? img : img.image_url)
+    : [product.image || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&h=600&fit=crop'];
+
+
+  const tabs = [
+    {
+      id: 'description',
+      label: 'Description',
+      content: (
+        <div>
+          <div className="relative">
+            <div 
+              className={`prose prose-sm dark:prose-invert max-w-none text-neutral-600 dark:text-neutral-400 leading-relaxed overflow-hidden transition-all duration-500 ${isExpanded ? 'max-h-[3000px]' : 'max-h-48'}`}
+              dangerouslySetInnerHTML={{ __html: product.description || '<p>No description available.</p>' }}
+            />
+            {!isExpanded && product.description?.length > 400 && (
+              <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white dark:from-neutral-950 to-transparent pointer-events-none transition-opacity duration-300" />
+            )}
+          </div>
+          {product.description?.length > 400 && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-4 text-sm font-bold text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 transition-colors flex items-center gap-1 uppercase tracking-wider relative z-10"
+            >
+              {isExpanded ? 'Read Less' : 'Read More'}
+            </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'details',
+      label: 'Details',
+      content: (
+        <div className="space-y-3 text-sm text-neutral-600 dark:text-neutral-400">
+          {product.sku && <p><span className="font-medium text-neutral-800 dark:text-neutral-200">SKU:</span> {product.sku}</p>}
+          {product.brand && <p><span className="font-medium text-neutral-800 dark:text-neutral-200">Brand:</span> {product.brand}</p>}
+          {product.category && <p><span className="font-medium text-neutral-800 dark:text-neutral-200">Category:</span> {product.category}</p>}
+          
+          {product.symptom && product.symptom.length > 0 && (
+            <p className="flex flex-wrap gap-1 leading-relaxed"><span className="font-medium text-neutral-800 dark:text-neutral-200 mr-1">Symptoms:</span> {(Array.isArray(product.symptom) ? product.symptom : [product.symptom]).join(', ')}</p>
+          )}
+          {product.weight && <p><span className="font-medium text-neutral-800 dark:text-neutral-200">Weight:</span> {product.weight}g</p>}
+          {product.dimensions && (
+            <p><span className="font-medium text-neutral-800 dark:text-neutral-200">Dimensions:</span> {product.dimensions.length} x {product.dimensions.width} x {product.dimensions.height} cm</p>
+          )}
+          
+          {product.hsn_code && <p><span className="font-medium text-neutral-800 dark:text-neutral-200">HSN Code:</span> {product.hsn_code}</p>}
+          {/* {product.gst_percentage && <p><span className="font-medium text-neutral-800 dark:text-neutral-200">GST:</span> {product.gst_percentage}%</p>} */}
+          
+          {product.tags && product.tags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <span className="font-medium text-neutral-800 dark:text-neutral-200 text-xs mr-1 uppercase tracking-wider">Tags:</span>
+              {(Array.isArray(product.tags) ? product.tags : [product.tags]).map((tag, i) => (
+                <span key={i} className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded text-xs shadow-sm">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <motion.div {...pageTransition}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14">
+          {/* Image Gallery */}
+          <div className="space-y-4">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group">
+              <img
+                src={images[selectedImage]}
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-500"
+              />
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 dark:bg-black/50 text-neutral-800 dark:text-neutral-200 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-sm"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-white/80 dark:bg-black/50 text-neutral-800 dark:text-neutral-200 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black shadow-sm"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+            </div>
+            {images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto no-scrollbar">
+                {images.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedImage(i)}
+                    className={`w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${
+                      selectedImage === i
+                        ? 'border-primary-500 ring-2 ring-primary-500/30'
+                        : 'border-transparent opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Product Info */}
+          <div>
+            {product.brand && (
+              <p className="text-xs font-medium text-primary-500 uppercase tracking-widest mb-2">{product.brand}</p>
+            )}
+            <h1 className="text-2xl sm:text-3xl font-heading font-bold text-neutral-900 dark:text-white">
+              {product.name}
+            </h1>
+
+            {product.rating != null && (
+              <div className="flex items-center gap-2 mt-3">
+                <RatingStars rating={product.rating} size="md" />
+                <span className="text-sm text-neutral-400">({product.review_count || 0} reviews)</span>
+              </div>
+            )}
+
+            <div className="mt-6">
+              <span className="text-3xl font-bold text-neutral-900 dark:text-white">
+                {formatPrice(product.price_usd)}
+              </span>
+              <span className="ml-2 text-xs text-neutral-400">incl. GST</span>
+            </div>
+
+            {/* Stock Status */}
+            <div className="mt-4">
+              {product.stock > 0 ? (
+                <span className="inline-flex items-center gap-1.5 text-sm text-success-600">
+                  <Check className="w-4 h-4" /> In Stock
+                </span>
+              ) : (
+                <span className="text-sm text-error-500">Out of Stock</span>
+              )}
+            </div>
+
+            {/* Quantity + Add to Cart */}
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              <div className="flex items-center border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+                  <Minus className="w-4 h-4 text-neutral-500" />
+                </button>
+                <span className="px-6 py-3 text-sm font-medium text-neutral-800 dark:text-neutral-200 bg-white dark:bg-neutral-900 min-w-[4rem] text-center">
+                  {quantity}
+                </span>
+                <button onClick={() => setQuantity(Math.min(product.stock || 99, quantity + 1))} className="px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+                  <Plus className="w-4 h-4 text-neutral-500" />
+                </button>
+              </div>
+              <Button
+                size="lg"
+                className="flex-1 gap-2"
+                onClick={handleAddToCart}
+                loading={adding}
+                disabled={product.stock <= 0}
+              >
+                <ShoppingBag className="w-5 h-5" /> Add to Cart
+              </Button>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="mt-8 grid grid-cols-3 gap-4 pt-6 border-t border-neutral-100 dark:border-neutral-800">
+              {[
+                { icon: Truck, label: 'Dispatched', desc: 'within 3-5 working days' },
+                { icon: Shield, label: 'Secure Payment', desc: '100% encrypted' },
+                { icon: RotateCcw, label: 'Guaranteed', desc: 'Premium quality & Authenticity' },
+              ].map(({ icon: Icon, label, desc }) => (
+                <div key={label} className="text-center">
+                  <Icon className="w-5 h-5 text-primary-500 mx-auto mb-1" />
+                  <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200">{label}</p>
+                  <p className="text-[10px] text-neutral-400">{desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Tabs */}
+            <div className="mt-8">
+              <Tabs tabs={tabs} defaultTab="description" />
+            </div>
+          </div>
+        </div>
+
+        {/* Related Products */}
+        {related.length > 0 && (
+          <div className="mt-20">
+            <h2 className="text-2xl font-heading font-semibold text-neutral-900 dark:text-white mb-8">
+              Related Products
+            </h2>
+            <ProductGrid products={related} columns={4} />
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}

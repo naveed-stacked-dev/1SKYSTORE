@@ -1,0 +1,215 @@
+@import "tailwindcss";
+
+/* ============================================
+   1SKYSTORE ADMIN DESIGN SYSTEM — Tailwind CSS v4
+   ============================================ */
+
+/* ---- Dark Mode: Class-based ---- */
+@variant dark (&:is(.dark *));
+
+@theme {
+  /* ---- Primary Color Scale (Deep Blue #1565C0) ---- */
+  --color-primary-50: #E8F1FB;
+  --color-primary-100: #C7DCF5;
+  --color-primary-200: #9EC3ED;
+  --color-primary-300: #6BA4E2;
+  --color-primary-400: #3B84D4;
+  --color-primary-500: #1565C0;
+  --color-primary-600: #1256A6;
+  --color-primary-700: #0D47A1;
+  --color-primary-800: #0A3576;
+  --color-primary-900: #072450;
+
+  /* ---- Secondary Color Scale (Sky Blue) ---- */
+  --color-secondary-50: #E6F4FE;
+  --color-secondary-100: #C3E5FC;
+  --color-secondary-200: #99D3F9;
+  --color-secondary-300: #6BBEF5;
+  --color-secondary-400: #45ACF0;
+  --color-secondary-500: #2196E8;
+  --color-secondary-600: #1C86D3;
+  --color-secondary-700: #1771B4;
+  --color-secondary-800: #135C93;
+  --color-secondary-900: #0E4370;
+
+  /* ---- Neutral Grayscale (Cool Slate) ---- */
+  --color-neutral-50: #F5F8FC;
+  --color-neutral-100: #E9F0F8;
+  --color-neutral-150: #DDE6F1;
+  --color-neutral-200: #D2DDEA;
+  --color-neutral-300: #BBC9DB;
+  --color-neutral-400: #94A3B8;
+  --color-neutral-500: #64748B;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1E293B;
+  --color-neutral-900: #0F172A;
+  --color-neutral-950: #060B18;
+
+  /* ---- Semantic Colors ---- */
+  --color-success-50: #ECFDF5;
+  --color-success-500: #10B981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+
+  --color-error-50: #FEF2F2;
+  --color-error-500: #EF4444;
+  --color-error-600: #DC2626;
+  --color-error-700: #B91C1C;
+
+  --color-warning-50: #FFFBEB;
+  --color-warning-500: #F59E0B;
+  --color-warning-600: #D97706;
+  --color-warning-700: #B45309;
+
+  --color-info-50: #EFF6FF;
+  --color-info-500: #3B82F6;
+  --color-info-600: #2563EB;
+  --color-info-700: #1D4ED8;
+
+  /* ---- Font Families ---- */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-heading: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* ---- Shadows (Premium / Soft) ---- */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-premium: 0 12px 48px rgba(21, 101, 192, 0.15);
+  --shadow-glow: 0 10px 24px -10px rgba(21, 101, 192, 0.6);
+  --shadow-glow-lg: 0 16px 36px -12px rgba(21, 101, 192, 0.7);
+
+  /* ---- Animations ---- */
+  --animate-fade-in: fadeIn 0.5s ease-out forwards;
+  --animate-slide-up: slideUp 0.5s ease-out forwards;
+  --animate-slide-down: slideDown 0.3s ease-out forwards;
+  --animate-scale-in: scaleIn 0.3s ease-out forwards;
+  --animate-spin-slow: spin 3s linear infinite;
+  --animate-pulse-soft: pulseSoft 2s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.5s infinite;
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-900);
+}
+
+/* ---- Dark Mode Body ---- */
+.dark {
+  background-color: var(--color-neutral-950);
+  color: var(--color-neutral-100);
+}
+
+/* ---- Typography ---- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* ---- Scrollbar Styling ---- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-700);
+}
+
+/* ---- Selection ---- */
+::selection {
+  background-color: var(--color-primary-200);
+  color: var(--color-primary-900);
+}
+.dark ::selection {
+  background-color: var(--color-primary-700);
+  color: var(--color-primary-50);
+}
+
+/* ---- Focus Ring ---- */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ---- Skeleton Shimmer ---- */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--color-neutral-200) 25%, var(--color-neutral-100) 50%, var(--color-neutral-200) 75%);
+  background-size: 400% 100%;
+  animation: shimmer 1.5s infinite;
+}
+.dark .skeleton-shimmer {
+  background: linear-gradient(90deg, var(--color-neutral-800) 25%, var(--color-neutral-700) 50%, var(--color-neutral-800) 75%);
+  background-size: 400% 100%;
+}
+
+/* ---- Utility: Hide scrollbar ---- */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ---- Decorative grid (login background) ---- */
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(21, 101, 192, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(21, 101, 192, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 100%);
+}
+.dark .bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+}
+
+/* Light dot texture for coloured panels (dashboard banner) */
+.bg-dots-light {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+}
