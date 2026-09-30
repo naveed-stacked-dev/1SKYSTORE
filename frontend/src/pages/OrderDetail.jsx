@@ -7,8 +7,29 @@ import shippingService from '@/api/shipping.service';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
+import PageHeader from '@/components/common/PageHeader';
+import StatusMessage from '@/components/home/ui/StatusMessage';
+import { CONTAINER } from '@/components/home/ui/styles';
 import { pageTransition } from '@/animations/variants';
 import { formatPrice } from '@/utils/formatPrice';
+import { cn } from '@/utils/cn';
+
+const MotionDiv = motion.div;
+
+const PANEL = 'rounded-[1.75rem] bg-surface p-5 ring-1 ring-line sm:p-7';
+
+/** Small icon + display title heading each detail panel */
+function PanelTitle({ id, icon, children }) {
+  const Icon = icon;
+  return (
+    <div className="mb-5 flex items-center gap-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mist text-ink-soft" aria-hidden="true">
+        <Icon className="h-4 w-4" />
+      </span>
+      <h3 id={id} className="font-display text-lg font-medium tracking-[-0.02em] text-ink">{children}</h3>
+    </div>
+  );
+}
 
 export default function OrderDetail() {
   const { id } = useParams();
@@ -43,11 +64,23 @@ export default function OrderDetail() {
   }
 
   if (loading) {
-    return <div className="max-w-4xl mx-auto px-4 py-12 space-y-4"><Skeleton variant="card" className="h-64" /></div>;
+    return (
+      <div className={cn(CONTAINER, 'space-y-6 py-12 sm:py-16')} aria-label="Loading order">
+        <Skeleton variant="title" className="h-12 w-2/3 max-w-md" />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <Skeleton variant="card" className="h-72 rounded-[1.75rem] lg:col-span-7" />
+          <Skeleton variant="card" className="h-72 rounded-[1.75rem] lg:col-span-5" />
+        </div>
+      </div>
+    );
   }
 
   if (!order) {
-    return <div className="min-h-[60vh] flex items-center justify-center"><p className="text-neutral-500">Order not found</p></div>;
+    return (
+      <div className={cn(CONTAINER, 'flex min-h-[60vh] items-center py-16')}>
+        <StatusMessage className="w-full" title="Order not found" action={{ to: '/orders', label: 'Back to Orders' }} />
+      </div>
+    );
   }
 
   const statusColor = {
@@ -77,166 +110,211 @@ export default function OrderDetail() {
 
   const formattedEstimatedDelivery = formatEstimatedDelivery(estimatedDelivery);
 
-  return (
-    <motion.div {...pageTransition} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <Link to="/orders" className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-primary-500 mb-6">
-        <ArrowLeft className="w-4 h-4" /> Back to Orders
-      </Link>
+  // Timeline entries come only from what the order already reports
+  const timeline = [
+    order.createdAt && {
+      label: 'Order placed',
+      value: new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+    },
+    orderStatus && { label: 'Order status', value: orderStatus },
+    shipment && shipmentStatus && { label: 'Shipment', value: shipmentStatus },
+    liveTracking?.current_status && { label: 'Latest update', value: liveTracking.current_status },
+  ].filter(Boolean);
 
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-neutral-900 dark:text-white">Order #{order.id}</h1>
-          <p className="text-sm text-neutral-400 mt-1">
-            {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
-          </p>
-        </div>
-        <Badge variant={statusColor[orderStatus?.toLowerCase()] || 'default'}>
-          {orderStatus}
-        </Badge>
+  return (
+    <MotionDiv {...pageTransition} className="pb-20 sm:pb-28">
+      <div className={cn(CONTAINER, 'pt-6 sm:pt-8')}>
+        <Link
+          to="/orders"
+          className="group -ml-1 inline-flex min-h-11 items-center gap-2 rounded-full px-1 text-sm font-medium text-ink-soft transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-0.5" /> Back to Orders
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Items */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
-            <Package className="w-4 h-4 text-primary-500" /> Items
-          </h3>
-          <div className="space-y-3">
-            {(order.items || []).map((item, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0">
-                  {item.product?.images?.[0]?.image_url && (
-                    <img src={item.product.images[0].image_url} alt="" className="w-full h-full object-cover" />
+      <PageHeader
+        className="pt-4 sm:pt-6"
+        size="sm"
+        eyebrow={order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : undefined}
+        title={`Order #${order.id}`}
+      >
+        <Badge variant={statusColor[orderStatus?.toLowerCase()] || 'default'} className="px-4 py-2 text-sm capitalize">
+          {orderStatus}
+        </Badge>
+      </PageHeader>
+
+      <div className={CONTAINER}>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+          <div className="space-y-6 lg:col-span-7">
+            {/* Status timeline — built only from the dates and statuses the order carries */}
+            {timeline.length > 0 && (
+              <section className={PANEL} aria-labelledby="order-status-title">
+                <PanelTitle id="order-status-title" icon={Truck}>Status</PanelTitle>
+                <ol className="relative">
+                  {timeline.map((entry, i) => {
+                    const last = i === timeline.length - 1;
+                    return (
+                      <li key={entry.label} className="relative flex gap-4 pb-6 last:pb-0">
+                        {!last && <span className="absolute left-[7px] top-5 h-[calc(100%-0.75rem)] w-px bg-line" aria-hidden="true" />}
+                        <span
+                          className={cn(
+                            'relative mt-1 flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-full',
+                            last ? 'bg-accent' : 'bg-surface ring-1 ring-inset ring-line'
+                          )}
+                          aria-hidden="true"
+                        >
+                          {last ? (
+                            <span className="h-1.5 w-1.5 rounded-full bg-canvas" />
+                          ) : (
+                            <span className="h-1.5 w-1.5 rounded-full bg-ink-faint" />
+                          )}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-faint">{entry.label}</p>
+                          <p className={cn('mt-1 text-[15px] capitalize', last ? 'font-medium text-ink' : 'text-ink-soft')}>{entry.value}</p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </section>
+            )}
+
+            {/* Items */}
+            <section className={PANEL} aria-labelledby="order-items-title">
+              <PanelTitle id="order-items-title" icon={Package}>Items</PanelTitle>
+              <div className="divide-y divide-line">
+                {(order.items || []).map((item, i) => (
+                  <div key={i} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-plate sm:h-20 sm:w-20">
+                      {item.product?.images?.[0]?.image_url && (
+                        <img src={item.product.images[0].image_url} alt="" className="absolute inset-0 h-full w-full object-contain p-2 mix-blend-multiply" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[15px] font-medium text-ink">{item.product_name}</p>
+                      <p className="mt-0.5 text-sm tabular-nums text-ink-faint">Qty: {item.quantity}</p>
+                    </div>
+                    <p className="shrink-0 text-[15px] font-medium tabular-nums text-ink">{formatPrice(item.unit_price || item.price, order.currency)}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          {/* Address + Payment */}
+          <div className="space-y-6 lg:col-span-5">
+            {order.address && (
+              <section className={PANEL} aria-labelledby="order-address-title">
+                <PanelTitle id="order-address-title" icon={MapPin}>Delivery Address</PanelTitle>
+                <p className="text-[15px] leading-relaxed text-ink-soft">
+                  <span className="font-medium text-ink">{order.address.full_name}</span><br />
+                  {order.address.address_line1}<br />
+                  {order.address.address_line2 && <>{order.address.address_line2}<br /></>}
+                  {order.address.landmark && <><span className="text-sm text-ink-faint">Landmark: {order.address.landmark}</span><br /></>}
+                  {order.address.city}, {order.address.state} {order.address.postal_code}
+                </p>
+              </section>
+            )}
+
+            <section className={PANEL} aria-labelledby="order-payment-title">
+              <PanelTitle id="order-payment-title" icon={CreditCard}>Payment</PanelTitle>
+              <div className="space-y-3 text-[15px]">
+                {order.payments && order.payments.length > 0 && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-ink-soft">Method</span>
+                    <span className="capitalize text-ink">{order.payments[0].provider || 'Razorpay'}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-ink-soft">Status</span>
+                  <Badge variant={order.payment_status === 'paid' ? 'success' : 'warning'} className="capitalize">
+                    {order.payment_status || 'pending'}
+                  </Badge>
+                </div>
+                <div className="my-5! border-t border-line" />
+                <div className="flex justify-between gap-4 text-ink-soft">
+                  <span>Subtotal</span>
+                  <span className="tabular-nums text-ink">{formatPrice(order.subtotal, order.currency)}</span>
+                </div>
+                {parseFloat(order.shipping_charge) > 0 && (
+                  <div className="flex justify-between gap-4 text-ink-soft">
+                    <span>Shipping</span>
+                    <span className="tabular-nums text-ink">{formatPrice(order.shipping_charge, order.currency)}</span>
+                  </div>
+                )}
+                {parseFloat(order.discount) > 0 && (
+                  <div className="flex justify-between gap-4 font-medium text-accent">
+                    <span>Discount</span>
+                    <span className="tabular-nums">-{formatPrice(order.discount, order.currency)}</span>
+                  </div>
+                )}
+                {parseFloat(order.tax) > 0 && (
+                  <div className="flex justify-between gap-4 text-ink-soft">
+                    <span>Tax</span>
+                    <span className="tabular-nums text-ink">{formatPrice(order.tax, order.currency)}</span>
+                  </div>
+                )}
+                <div className="mt-5! flex items-baseline justify-between gap-4 border-t border-line pt-5">
+                  <span className="font-medium text-ink">Total</span>
+                  <span className="font-display text-3xl font-medium tracking-[-0.03em] tabular-nums text-ink">{formatPrice(order.total_amount, order.currency)}</span>
+                </div>
+              </div>
+            </section>
+
+            {shipment && (
+              <section className={PANEL} aria-labelledby="order-shipment-title">
+                <PanelTitle id="order-shipment-title" icon={Truck}>Shipment Details</PanelTitle>
+                <dl className="space-y-3 text-[15px]">
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-soft">Shipment Status</dt>
+                    <dd className="text-right font-medium capitalize text-ink">
+                      {shipmentStatus || 'Pending'}
+                    </dd>
+                  </div>
+                  {formattedEstimatedDelivery && (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-ink-soft">Expected Delivery</dt>
+                      <dd className="text-right tabular-nums text-ink">
+                        {formattedEstimatedDelivery}
+                      </dd>
+                    </div>
                   )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100 truncate">{item.product_name}</p>
-                  <p className="text-xs text-neutral-400">Qty: {item.quantity}</p>
-                </div>
-                <p className="text-sm font-semibold">{formatPrice(item.unit_price || item.price, order.currency)}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Address + Payment */}
-        <div className="space-y-4">
-          {order.address && (
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-3">
-                <MapPin className="w-4 h-4 text-primary-500" /> Delivery Address
-              </h3>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                <span className="font-medium text-neutral-800 dark:text-neutral-200">{order.address.full_name}</span><br />
-                {order.address.address_line1}<br />
-                {order.address.address_line2 && <>{order.address.address_line2}<br /></>}
-                {order.address.landmark && <><span className="text-xs text-neutral-400">Landmark: {order.address.landmark}</span><br /></>}
-                {order.address.city}, {order.address.state} {order.address.postal_code}
-              </p>
-            </div>
-          )}
-
-          <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-3">
-              <CreditCard className="w-4 h-4 text-primary-500" /> Payment
-            </h3>
-            <div className="space-y-2 text-sm">
-              {order.payments && order.payments.length > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Method</span>
-                  <span className="capitalize">{order.payments[0].provider || 'Razorpay'}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Status</span>
-                <span className={`capitalize ${order.payment_status === 'paid' ? 'text-green-500 font-medium' : 'text-amber-500 font-medium'}`}>
-                  {order.payment_status || 'pending'}
-                </span>
-              </div>
-              <div className="my-3 border-t border-neutral-100 dark:border-neutral-800" />
-              <div className="flex justify-between text-neutral-500">
-                <span>Subtotal</span>
-                <span>{formatPrice(order.subtotal, order.currency)}</span>
-              </div>
-              {parseFloat(order.shipping_charge) > 0 && (
-                <div className="flex justify-between text-neutral-500">
-                  <span>Shipping</span>
-                  <span>{formatPrice(order.shipping_charge, order.currency)}</span>
-                </div>
-              )}
-              {parseFloat(order.discount) > 0 && (
-                <div className="flex justify-between text-primary-500 font-medium">
-                  <span>Discount</span>
-                  <span>-{formatPrice(order.discount, order.currency)}</span>
-                </div>
-              )}
-              {parseFloat(order.tax) > 0 && (
-                <div className="flex justify-between text-neutral-500">
-                  <span>Tax</span>
-                  <span>{formatPrice(order.tax, order.currency)}</span>
-                </div>
-              )}
-              <div className="flex justify-between pt-3 mt-2 border-t border-neutral-100 dark:border-neutral-800 text-base font-semibold text-neutral-900 dark:text-white">
-                <span>Total</span>
-                <span className="text-primary-500">{formatPrice(order.total_amount, order.currency)}</span>
-              </div>
-            </div>
-          </div>
-
-          {shipment && (
-            <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-3">
-                <Truck className="w-4 h-4 text-primary-500" /> Shipment Details
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between gap-4">
-                  <span className="text-neutral-500">Shipment Status</span>
-                  <span className="capitalize font-medium text-neutral-800 dark:text-neutral-100">
-                    {shipmentStatus || 'Pending'}
-                  </span>
-                </div>
-                {formattedEstimatedDelivery && (
                   <div className="flex justify-between gap-4">
-                    <span className="text-neutral-500">Expected Delivery</span>
-                    <span className="text-right text-neutral-800 dark:text-neutral-100">
-                      {formattedEstimatedDelivery}
-                    </span>
+                    <dt className="text-ink-soft">Courier</dt>
+                    <dd className="text-right text-ink">
+                      {shipment.courier_name || liveTracking?.courier_name || 'Will be assigned soon'}
+                    </dd>
                   </div>
-                )}
-                <div className="flex justify-between gap-4">
-                  <span className="text-neutral-500">Courier</span>
-                  <span className="text-right text-neutral-800 dark:text-neutral-100">
-                    {shipment.courier_name || liveTracking?.courier_name || 'Will be assigned soon'}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-neutral-500">AWB / Tracking No.</span>
-                  <span className="text-right text-neutral-800 dark:text-neutral-100">
-                    {shipment.awb_code || liveTracking?.awb_code || 'Not generated yet'}
-                  </span>
-                </div>
-                {liveTracking?.current_status && (
                   <div className="flex justify-between gap-4">
-                    <span className="text-neutral-500">Latest Update</span>
-                    <span className="text-right text-neutral-800 dark:text-neutral-100">{liveTracking.current_status}</span>
+                    <dt className="shrink-0 text-ink-soft">AWB / Tracking No.</dt>
+                    <dd className="min-w-0 break-all text-right tabular-nums text-ink">
+                      {shipment.awb_code || liveTracking?.awb_code || 'Not generated yet'}
+                    </dd>
                   </div>
-                )}
+                  {liveTracking?.current_status && (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-ink-soft">Latest Update</dt>
+                      <dd className="text-right text-ink">{liveTracking.current_status}</dd>
+                    </div>
+                  )}
+                </dl>
                 {trackingUrl && (
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
+                    size="md"
                     onClick={() => window.open(trackingUrl, '_blank', 'noopener,noreferrer')}
-                    className="mt-2 w-fit"
+                    className="mt-6 w-full sm:w-fit"
                   >
                     Track Order
                   </Button>
                 )}
-              </div>
-            </div>
-          )}
+              </section>
+            )}
+          </div>
         </div>
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 }

@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import authService from '@/api/auth.service';
+import Accent from '@/components/home/ui/Accent';
+import Eyebrow from '@/components/home/ui/Eyebrow';
+import PillLink from '@/components/home/ui/PillLink';
+
+const PANEL = 'rounded-[2rem] border border-line bg-surface p-7 text-center sm:p-10';
+const ICON_SEAT = 'mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full';
+const TITLE = 'mt-3 font-display text-[clamp(2rem,8vw,2.5rem)] font-medium leading-none tracking-[-0.035em] text-ink';
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -32,14 +39,15 @@ export default function VerifyEmail() {
 
   if (status === 'loading') {
     return (
-      <div className="text-center py-10">
-        <div className="mx-auto w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center mb-5">
-          <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+      <div role="status" aria-live="polite" className={PANEL}>
+        <div className={`${ICON_SEAT} bg-accent-soft text-accent`}>
+          <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl font-heading font-bold text-neutral-900 dark:text-white mb-3">
+        <Eyebrow>Email verification</Eyebrow>
+        <h1 className={TITLE}>
           Verifying your email...
         </h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-ink-soft">
           Please wait while we verify your email address.
         </p>
       </div>
@@ -48,44 +56,40 @@ export default function VerifyEmail() {
 
   if (status === 'success') {
     return (
-      <div className="text-center py-10">
-        <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-500/15 flex items-center justify-center mb-5">
-          <CheckCircle className="w-8 h-8 text-green-500" />
+      <div role="status" aria-live="polite" className={PANEL}>
+        <div className={`${ICON_SEAT} bg-accent-soft text-accent`}>
+          <CheckCircle className="h-6 w-6" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl font-heading font-bold text-neutral-900 dark:text-white mb-3">
-          Email verified!
+        <Eyebrow>Email verification</Eyebrow>
+        <h1 className={TITLE}>
+          Email <Accent>verified!</Accent>
         </h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-8 max-w-sm mx-auto">
+        <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-ink-soft">
           {message} You can now log in to your account.
         </p>
-        <Link
-          to="/login"
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium transition-colors"
-        >
-          Go to Login
-        </Link>
+        <div className="mt-8 flex justify-center">
+          <PillLink to="/login">Go to Login</PillLink>
+        </div>
       </div>
     );
   }
 
   // Error state
   return (
-    <div className="text-center py-10">
-      <div className="mx-auto w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/15 flex items-center justify-center mb-5">
-        <XCircle className="w-8 h-8 text-red-500" />
+    <div role="alert" className={PANEL}>
+      <div className={`${ICON_SEAT} bg-error-500/10 text-error-500`}>
+        <XCircle className="h-6 w-6" aria-hidden="true" />
       </div>
-      <h1 className="text-2xl font-heading font-bold text-neutral-900 dark:text-white mb-3">
+      <Eyebrow>Email verification</Eyebrow>
+      <h1 className={TITLE}>
         Verification failed
       </h1>
-      <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-8 max-w-sm mx-auto">
+      <p className="mx-auto mt-4 max-w-sm wrap-break-word text-[15px] leading-relaxed text-ink-soft">
         {message}
       </p>
-      <Link
-        to="/register"
-        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium transition-colors"
-      >
-        Try Again
-      </Link>
+      <div className="mt-8 flex justify-center">
+        <PillLink to="/register" tone="outline">Try Again</PillLink>
+      </div>
     </div>
   );
 }

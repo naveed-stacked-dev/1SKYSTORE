@@ -3,20 +3,21 @@ import { motion } from 'framer-motion';
 import { cn } from '@/utils/cn';
 import { Loader2 } from 'lucide-react';
 
+// Storefront design system: midnight ink pills, brand-blue accent on hover
 const variants = {
-  primary: 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-glow hover:from-primary-600 hover:to-primary-700 hover:shadow-glow-lg',
-  secondary: 'bg-secondary-200 text-primary-800 hover:bg-secondary-300',
-  outline: 'border-2 border-primary-500 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20',
-  ghost: 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800',
+  primary: 'bg-ink text-canvas hover:bg-accent',
+  secondary: 'bg-accent-soft text-accent hover:bg-accent hover:text-white',
+  outline: 'text-ink ring-1 ring-inset ring-line hover:bg-ink hover:text-canvas',
+  ghost: 'text-ink hover:bg-ink/6',
   danger: 'bg-error-500 text-white hover:bg-error-600',
-  link: 'text-primary-500 hover:text-primary-600 underline-offset-4 hover:underline p-0 h-auto',
+  link: 'text-accent underline-offset-4 hover:underline p-0 h-auto',
 };
 
 const sizes = {
-  sm: 'px-3 py-1.5 text-sm rounded-lg',
-  md: 'px-5 py-2.5 text-sm rounded-xl',
-  lg: 'px-7 py-3.5 text-base rounded-xl',
-  icon: 'p-2.5 rounded-xl',
+  sm: 'min-h-9 px-4 py-1.5 text-sm rounded-full',
+  md: 'min-h-11 px-5 py-2.5 text-sm rounded-full',
+  lg: 'min-h-12 px-7 py-3 text-[15px] rounded-full',
+  icon: 'h-11 w-11 rounded-full',
 };
 
 const Button = forwardRef(({
@@ -33,9 +34,9 @@ const Button = forwardRef(({
       ref={ref}
       whileTap={{ scale: 0.97 }}
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 cursor-pointer',
+        'inline-flex items-center justify-center gap-2 font-medium transition-colors duration-300 cursor-pointer',
         'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
         variants[variant],
         sizes[size],
         className

@@ -73,17 +73,24 @@ export default function CouponInput({ onApply, onRemove }) {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Applied coupon display */}
       {applied && appliedData && (
-        <div className="flex items-center justify-between p-3 rounded-xl bg-primary-50/50 dark:bg-primary-900/15 border border-primary-200 dark:border-primary-800">
-          <div className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-primary-500" />
-            <span className="text-sm font-medium text-primary-700 dark:text-primary-300">{code}</span>
-            <span className="text-xs text-primary-500">-${appliedData.discount}</span>
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-accent-soft py-2 pl-4 pr-1.5">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-canvas" aria-hidden="true">
+              <Check className="h-3.5 w-3.5" />
+            </span>
+            <span className="truncate text-sm font-medium tracking-[0.08em] text-ink">{code}</span>
+            <span className="shrink-0 text-sm tabular-nums text-accent">-${appliedData.discount}</span>
           </div>
-          <button onClick={handleRemoveCoupon} className="p-1 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">
-            <X className="w-3.5 h-3.5 text-primary-500" />
+          <button
+            type="button"
+            onClick={handleRemoveCoupon}
+            aria-label="Remove coupon"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-soft transition-colors duration-300 hover:bg-ink/6 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -92,22 +99,24 @@ export default function CouponInput({ onApply, onRemove }) {
       {!applied && (
         <>
           <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <div className="relative min-w-0 flex-1">
+              <Tag className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
               <input
                 type="text"
                 value={code}
                 onChange={(e) => { setCode(e.target.value.toUpperCase()); }}
                 placeholder="Coupon code"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm font-medium tracking-wider dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                aria-label="Coupon code"
+                className="min-h-12 w-full rounded-2xl border border-line bg-surface py-3 pl-11 pr-4 text-sm font-medium tracking-[0.08em] text-ink transition-[border-color,box-shadow] duration-200 placeholder:font-normal placeholder:tracking-normal placeholder:text-ink-faint focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
               />
             </div>
             <button
+              type="button"
               onClick={() => handleApply()}
               disabled={loading || !code.trim()}
-              className="px-5 py-2.5 rounded-xl text-sm font-medium bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full px-5 text-sm font-medium text-ink ring-1 ring-inset ring-line transition-colors duration-300 hover:bg-ink hover:text-canvas disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               Apply
             </button>
           </div>
@@ -116,42 +125,45 @@ export default function CouponInput({ onApply, onRemove }) {
           {availableCoupons.length > 0 && (
             <div>
               <button
+                type="button"
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center gap-1.5 text-xs font-medium text-primary-500 hover:text-primary-600 transition-colors"
+                aria-expanded={showDropdown}
+                className="-ml-1 inline-flex min-h-11 items-center gap-1.5 rounded-full px-1 text-[13px] font-medium text-accent transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
-                <Tag className="w-3 h-3" />
+                <Tag className="h-3.5 w-3.5" aria-hidden="true" />
                 View available coupons
-                <ChevronDown className={`w-3 h-3 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${showDropdown ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
 
               {showDropdown && (
-                <div className="mt-2 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden max-h-52 overflow-y-auto">
+                <div className="mt-1 max-h-60 divide-y divide-line overflow-y-auto rounded-2xl bg-surface ring-1 ring-inset ring-line">
                   {availableCoupons.map((coupon) => (
                     <button
+                      type="button"
                       key={coupon.code}
                       onClick={() => handleSelectCoupon(coupon)}
                       disabled={loading}
-                      className="w-full flex items-start gap-3 p-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors border-b border-neutral-100 dark:border-neutral-800 last:border-b-0"
+                      className="flex w-full items-start gap-3 p-4 text-left transition-colors duration-300 hover:bg-mist disabled:opacity-60"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
                         {coupon.discount_type === 'percentage' ? (
-                          <Percent className="w-3.5 h-3.5 text-primary-500" />
+                          <Percent className="h-3.5 w-3.5" aria-hidden="true" />
                         ) : (
-                          <DollarSign className="w-3.5 h-3.5 text-primary-500" />
+                          <DollarSign className="h-3.5 w-3.5" aria-hidden="true" />
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-neutral-800 dark:text-neutral-100 tracking-wider">{coupon.code}</span>
-                          <span className="text-[10px] font-semibold text-primary-500 bg-primary-50 dark:bg-primary-900/20 px-1.5 py-0.5 rounded">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[13px] font-semibold tracking-[0.1em] text-ink">{coupon.code}</span>
+                          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-accent">
                             {formatDiscount(coupon)}
                           </span>
                         </div>
                         {coupon.description && (
-                          <p className="text-[11px] text-neutral-400 mt-0.5 line-clamp-1">{coupon.description}</p>
+                          <p className="mt-1 line-clamp-1 text-xs text-ink-soft">{coupon.description}</p>
                         )}
                         {coupon.brand && (
-                          <p className="text-[10px] text-neutral-400 mt-0.5">Only for: {coupon.brand}</p>
+                          <p className="mt-0.5 text-[11px] text-ink-faint">Only for: {coupon.brand}</p>
                         )}
                       </div>
                     </button>
@@ -162,8 +174,8 @@ export default function CouponInput({ onApply, onRemove }) {
           )}
 
           {loadingCoupons && (
-            <div className="flex items-center gap-2 text-xs text-neutral-400">
-              <Loader2 className="w-3 h-3 animate-spin" />
+            <div className="flex items-center gap-2 text-xs text-ink-faint">
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
               Loading coupons...
             </div>
           )}

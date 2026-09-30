@@ -8,9 +8,36 @@ import AddressCard from '@/components/ecommerce/AddressCard';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
+import PageHeader from '@/components/common/PageHeader';
+import { CONTAINER } from '@/components/home/ui/styles';
 import { pageTransition } from '@/animations/variants';
+import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 import { EMPTY_ADDRESS_FORM, getAddressApiErrors, validateAddressForm } from '@/utils/addressForm';
+
+const MotionDiv = motion.div;
+
+const CARD = 'rounded-[1.75rem] bg-surface p-5 ring-1 ring-line sm:p-8';
+
+/** Settings row: numbered label column on the left, content on the right */
+function SettingsSection({ index, icon, title, action, children }) {
+  const Icon = icon;
+  return (
+    <section className="grid grid-cols-1 gap-6 py-10 sm:py-12 lg:grid-cols-12 lg:gap-10">
+      <div className="flex items-start justify-between gap-4 lg:col-span-4 lg:flex-col lg:justify-start">
+        <div>
+          <p className="inline-flex items-center gap-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-ink-faint">
+            <span className="font-display tabular-nums text-accent">{index}</span>
+            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+          </p>
+          <h2 className="font-display mt-3 text-2xl font-medium leading-[1.05] tracking-[-0.03em] text-ink sm:text-[1.75rem]">{title}</h2>
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
+      </div>
+      <div className="min-w-0 lg:col-span-8">{children}</div>
+    </section>
+  );
+}
 
 export default function Profile() {
   const { user, updateProfile, logout } = useAuth();
@@ -141,77 +168,91 @@ export default function Profile() {
   }
 
   return (
-    <motion.div {...pageTransition} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <h1 className="text-2xl sm:text-3xl font-heading font-bold text-neutral-900 dark:text-white mb-8">My Profile</h1>
+    <MotionDiv {...pageTransition} className="pb-20 sm:pb-28">
+      <PageHeader eyebrow="Account" title="My Profile" size="sm">
+        <Button variant="ghost" className="gap-2 text-error-500! ring-1 ring-inset ring-line hover:bg-error-500/10!" onClick={logout}>
+          <LogOut className="w-4 h-4" /> Sign Out
+        </Button>
+      </PageHeader>
 
-      <div className="space-y-8">
+      <div className={cn(CONTAINER, 'divide-y divide-line border-t border-line')}>
         {/* Profile Info */}
-        <section className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-5">
-            <User className="w-5 h-5 text-primary-500" /> Personal Info
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-            <Input label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-            <Input label="Email" value={user?.email || ''} disabled />
-            <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <SettingsSection index="01" icon={User} title="Personal Info">
+          <div className={CARD}>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <Input label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+              <Input label="Email" value={user?.email || ''} disabled />
+              <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </div>
+            <div className="mt-6 flex justify-end border-t border-line pt-6">
+              <Button onClick={handleSaveProfile} loading={saving}>Save Changes</Button>
+            </div>
           </div>
-          <Button className="mt-4" onClick={handleSaveProfile} loading={saving}>Save Changes</Button>
-        </section>
+        </SettingsSection>
 
         {/* Addresses */}
-        <section className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-primary-500" /> Addresses
-            </h2>
-            <Button variant="outline" size="sm" onClick={() => { setEditAddress(null); setAddressForm(EMPTY_ADDRESS_FORM); setAddressErrors({}); setAddressModal(true); }} className="gap-1">
+        <SettingsSection
+          index="02"
+          icon={MapPin}
+          title="Addresses"
+          action={
+            <Button variant="outline" size="md" onClick={() => { setEditAddress(null); setAddressForm(EMPTY_ADDRESS_FORM); setAddressErrors({}); setAddressModal(true); }} className="gap-1.5">
               <Plus className="w-4 h-4" /> Add
             </Button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          }
+        >
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {addresses.map((addr) => (
               <AddressCard key={addr.id} address={addr} onEdit={openEditAddress} onDelete={handleDeleteAddress} />
             ))}
           </div>
-          {addresses.length === 0 && <p className="text-sm text-neutral-400">No addresses saved yet</p>}
-        </section>
+          {addresses.length === 0 && (
+            <div className="rounded-[1.75rem] border border-dashed border-line p-8 text-center">
+              <p className="text-[15px] text-ink-soft">No addresses saved yet</p>
+            </div>
+          )}
+        </SettingsSection>
 
         {/* Change Password */}
-        <section className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-5">
-            <Lock className="w-5 h-5 text-primary-500" /> Change Password
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input type="password" label="Current Password" value={passwordForm.oldPassword} onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })} />
-            <Input type="password" label="New Password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })} />
+        <SettingsSection index="03" icon={Lock} title="Change Password">
+          <div className={CARD}>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input type="password" label="Current Password" value={passwordForm.oldPassword} onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })} />
+              <Input type="password" label="New Password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })} />
+            </div>
+            <div className="mt-6 flex justify-end border-t border-line pt-6">
+              <Button onClick={handleChangePassword} loading={changingPw}>Update Password</Button>
+            </div>
           </div>
-          <Button className="mt-4" onClick={handleChangePassword} loading={changingPw}>Update Password</Button>
-        </section>
-
-        {/* Logout */}
-        <Button variant="ghost" className="!text-error-500 bg-error-500/10 hover:bg-error-500/20 gap-2" onClick={logout}>
-          <LogOut className="w-4 h-4" /> Sign Out
-        </Button>
+        </SettingsSection>
       </div>
 
       {/* Address Modal */}
       <Modal isOpen={addressModal} onClose={() => { setAddressModal(false); setAddressErrors({}); }} title={editAddress ? 'Edit Address' : 'Add Address'}>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input label="Full Name" error={addressErrors.full_name} value={addressForm.full_name || ''} onChange={(e) => updateAddressField('full_name', e.target.value)} />
             <Input label="Phone" error={addressErrors.phone} value={addressForm.phone || ''} onChange={(e) => updateAddressField('phone', e.target.value)} />
-            <Input label="Address" error={addressErrors.address_line1} className="sm:col-span-2" value={addressForm.address_line1 || ''} onChange={(e) => updateAddressField('address_line1', e.target.value)} />
-            <Input label="Address Line 2 (Optional)" error={addressErrors.address_line2} className="sm:col-span-2" value={addressForm.address_line2 || ''} onChange={(e) => updateAddressField('address_line2', e.target.value)} />
-            <Input label="Landmark" error={addressErrors.landmark} className="sm:col-span-2" value={addressForm.landmark || ''} onChange={(e) => updateAddressField('landmark', e.target.value)} placeholder="e.g. Near City Hospital" />
+            <div className="sm:col-span-2">
+              <Input label="Address" error={addressErrors.address_line1} value={addressForm.address_line1 || ''} onChange={(e) => updateAddressField('address_line1', e.target.value)} />
+            </div>
+            <div className="sm:col-span-2">
+              <Input label="Address Line 2 (Optional)" error={addressErrors.address_line2} value={addressForm.address_line2 || ''} onChange={(e) => updateAddressField('address_line2', e.target.value)} />
+            </div>
+            <div className="sm:col-span-2">
+              <Input label="Landmark" error={addressErrors.landmark} value={addressForm.landmark || ''} onChange={(e) => updateAddressField('landmark', e.target.value)} placeholder="e.g. Near City Hospital" />
+            </div>
             <Input label="City" error={addressErrors.city} value={addressForm.city || ''} onChange={(e) => updateAddressField('city', e.target.value)} />
             <Input label="State" error={addressErrors.state} value={addressForm.state || ''} onChange={(e) => updateAddressField('state', e.target.value)} />
             <Input label="Country" error={addressErrors.country} value="India" disabled />
             <Input label="Postal Code" error={addressErrors.postal_code} value={addressForm.postal_code || ''} onChange={(e) => updateAddressField('postal_code', e.target.value)} />
           </div>
-          <Button onClick={handleSaveAddress} loading={saving}>{editAddress ? 'Update' : 'Save'}</Button>
+          <div className="flex justify-end">
+            <Button onClick={handleSaveAddress} loading={saving} className="w-full sm:w-auto">{editAddress ? 'Update' : 'Save'}</Button>
+          </div>
         </div>
       </Modal>
-    </motion.div>
+    </MotionDiv>
   );
 }

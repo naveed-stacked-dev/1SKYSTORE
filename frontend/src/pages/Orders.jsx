@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package } from 'lucide-react';
 import orderService from '@/api/order.service';
 import OrderCard from '@/components/ecommerce/OrderCard';
 import shippingService from '@/api/shipping.service';
 import { Skeleton } from '@/components/ui/Skeleton';
 import Pagination from '@/components/ui/Pagination';
+import PageHeader from '@/components/common/PageHeader';
+import StatusMessage from '@/components/home/ui/StatusMessage';
+import { CONTAINER } from '@/components/home/ui/styles';
 import { pageTransition, staggerContainer, staggerItem } from '@/animations/variants';
+
+const MotionDiv = motion.div;
 
 export default function Orders() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -67,39 +71,43 @@ export default function Orders() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-4">
-        {[...Array(3)].map((_, i) => <Skeleton key={i} variant="card" className="h-28" />)}
+      <div className="pb-20 sm:pb-28">
+        <PageHeader eyebrow="Account" title="My Orders" size="sm" />
+        <div className={`${CONTAINER} space-y-4`} aria-label="Loading orders">
+          {[...Array(3)].map((_, i) => <Skeleton key={i} variant="card" className="h-32 rounded-[1.75rem]" />)}
+        </div>
       </div>
     );
   }
 
   return (
-    <motion.div {...pageTransition} className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <h1 className="text-2xl sm:text-3xl font-heading font-bold text-neutral-900 dark:text-white mb-8">My Orders</h1>
-      {orders.length === 0 ? (
-        <div className="min-h-[40vh] flex flex-col items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
-            <Package className="w-7 h-7 text-neutral-400" />
-          </div>
-          <p className="text-neutral-500">No orders yet</p>
-        </div>
-      ) : (
-        <>
-          <motion.div className="space-y-4" variants={staggerContainer} initial="initial" animate="animate">
-            {orders.map((order) => (
-              <motion.div key={order.id} variants={staggerItem}>
-                <OrderCard order={order} />
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
+    <MotionDiv {...pageTransition} className="pb-20 sm:pb-28">
+      <PageHeader eyebrow="Account" title="My Orders" size="sm" />
+      <div className={CONTAINER}>
+        {orders.length === 0 ? (
+          <StatusMessage
+            title="No orders yet"
+            text="When you place an order, it will appear here."
+            action={{ to: '/shop', label: 'Start shopping' }}
           />
-        </>
-      )}
-    </motion.div>
+        ) : (
+          <>
+            <MotionDiv className="space-y-4" variants={staggerContainer} initial="initial" animate="animate">
+              {orders.map((order) => (
+                <MotionDiv key={order.id} variants={staggerItem}>
+                  <OrderCard order={order} />
+                </MotionDiv>
+              ))}
+            </MotionDiv>
+
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </>
+        )}
+      </div>
+    </MotionDiv>
   );
 }

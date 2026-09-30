@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { MapPin, Edit2, Trash2, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
+const ACTION =
+  'inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink-soft transition-colors duration-300 ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50';
+
 export default function AddressCard({ address, selected, onSelect, onEdit, onDelete }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const phoneVal = address.phone || address.phone_enc;
@@ -9,36 +13,71 @@ export default function AddressCard({ address, selected, onSelect, onEdit, onDel
   return (
     <div
       onClick={onSelect ? () => onSelect(address) : undefined}
+      role={onSelect ? 'radio' : undefined}
+      aria-checked={onSelect ? Boolean(selected) : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onKeyDown={
+        onSelect
+          ? (e) => {
+              if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                onSelect(address);
+              }
+            }
+          : undefined
+      }
       className={cn(
-        'relative p-5 rounded-2xl border-2 transition-all',
+        'relative flex h-full flex-col rounded-[1.75rem] bg-surface p-5 transition-shadow duration-300 sm:p-6',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
         onSelect && 'cursor-pointer',
-        selected
-          ? 'border-primary-500 bg-primary-50/30 dark:bg-primary-900/10'
-          : 'border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-200 dark:hover:border-neutral-700'
+        selected ? 'ring-2 ring-accent' : cn('ring-1 ring-line', onSelect && 'hover:ring-ink/25')
       )}
     >
-      {selected && (
-        <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center">
-          <Check className="w-3.5 h-3.5 text-white" />
-        </div>
+      {onSelect && (
+        <span
+          className={cn(
+            'absolute right-5 top-5 flex h-6 w-6 items-center justify-center rounded-full transition-colors duration-300',
+            selected ? 'bg-accent text-canvas' : 'ring-1 ring-inset ring-line'
+          )}
+          aria-hidden="true"
+        >
+          {selected && <Check className="h-3.5 w-3.5" />}
+        </span>
+      )}
+      {!onSelect && selected && (
+        <span className="absolute right-5 top-5 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-canvas" aria-hidden="true">
+          <Check className="h-3.5 w-3.5" />
+        </span>
       )}
 
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
-          <MapPin className="w-4 h-4 text-neutral-500" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100">{address.full_name}</p>
-          {phoneVal && (
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">{phoneVal}</p>
+      <div className="flex flex-1 items-start gap-4">
+        <div
+          className={cn(
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-300',
+            selected ? 'bg-accent-soft text-accent' : 'bg-mist text-ink-soft'
           )}
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">
+        >
+          <MapPin className="h-4 w-4" aria-hidden="true" />
+        </div>
+        <div className="min-w-0 flex-1 pr-8">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-[15px] font-medium text-ink">{address.full_name}</p>
+            {address.is_default && (
+              <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-accent">
+                Default
+              </span>
+            )}
+          </div>
+          {phoneVal && (
+            <p className="mt-1 text-sm tabular-nums text-ink-faint">{phoneVal}</p>
+          )}
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
             {address.address_line1}
             {address.address_line2 && `, ${address.address_line2}`}
             {address.landmark && (
               <>
                 <br />
-                <span className="text-neutral-400">Landmark: {address.landmark}</span>
+                <span className="text-ink-faint">Landmark: {address.landmark}</span>
               </>
             )}
             <br />
@@ -46,29 +85,26 @@ export default function AddressCard({ address, selected, onSelect, onEdit, onDel
             <br />
             {address.country}
           </p>
-          {address.is_default && (
-            <span className="inline-block mt-2 text-[10px] font-medium text-primary-500 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-md">
-              Default
-            </span>
-          )}
         </div>
       </div>
 
       {(onEdit || onDelete) && (
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+        <div className="mt-5 flex items-center gap-2 border-t border-line pt-3">
           {onEdit && (
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); onEdit(address); }}
-              className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-primary-500 transition-colors"
+              className={cn(ACTION, '-ml-3 hover:text-ink')}
             >
-              <Edit2 className="w-3.5 h-3.5" /> Edit
+              <Edit2 className="h-3.5 w-3.5" aria-hidden="true" /> Edit
             </button>
           )}
           {onDelete && (
             <button
+              type="button"
               disabled={isDeleting}
-              onClick={async (e) => { 
-                e.stopPropagation(); 
+              onClick={async (e) => {
+                e.stopPropagation();
                 setIsDeleting(true);
                 try {
                   await onDelete(address.id);
@@ -77,9 +113,9 @@ export default function AddressCard({ address, selected, onSelect, onEdit, onDel
                   setIsDeleting(false);
                 }
               }}
-              className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-error-500 disabled:opacity-50 transition-colors ml-auto"
+              className={cn(ACTION, '-mr-3 ml-auto hover:text-error-500')}
             >
-              {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
               {isDeleting ? 'Deleting...' : 'Delete'}
             </button>
           )}

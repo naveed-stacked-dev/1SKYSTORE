@@ -1,7 +1,7 @@
 import { cn } from '@/utils/cn';
 
 export function Skeleton({ className, variant = 'text', ...props }) {
-  const base = 'skeleton-shimmer rounded-xl animate-pulse';
+  const base = 'skeleton-shimmer rounded-2xl';
   const variants = {
     text: 'h-4 w-full',
     title: 'h-6 w-3/4',
@@ -22,26 +22,19 @@ export function Skeleton({ className, variant = 'text', ...props }) {
 
 export function ProductCardSkeleton() {
   return (
-    <div className="flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
-      <Skeleton variant="none" className="aspect-square w-full rounded-none flex-shrink-0" />
-      <div className="p-4 space-y-3 flex-1 flex flex-col">
-        <Skeleton variant="line" className="w-1/3" />
-        <Skeleton variant="title" />
-        <div className="flex-1">
-          <Skeleton variant="text" className="w-1/2" />
-        </div>
-        <div className="flex justify-between pt-2 mt-auto">
-          <Skeleton variant="button" />
-          <Skeleton className="h-8 w-8 rounded-full" />
-        </div>
-      </div>
+    <div className="flex flex-col" aria-hidden="true">
+      <div className="skeleton-shimmer aspect-[4/5] rounded-[1.75rem]" />
+      <div className="skeleton-shimmer mt-4 h-2.5 w-16 rounded-full" />
+      <div className="skeleton-shimmer mt-3 h-3.5 w-11/12 rounded-full" />
+      <div className="skeleton-shimmer mt-2 h-3.5 w-2/3 rounded-full" />
+      <div className="skeleton-shimmer mt-5 h-4 w-20 rounded-full" />
     </div>
   );
 }
 
 export function BlogCardSkeleton() {
   return (
-    <div className="rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800">
+    <div className="rounded-[1.75rem] overflow-hidden bg-surface ring-1 ring-line">
       <Skeleton variant="image" className="h-48 rounded-none" />
       <div className="p-5 space-y-3">
         <Skeleton variant="line" className="w-1/4" />

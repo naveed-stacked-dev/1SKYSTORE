@@ -18,14 +18,14 @@ export default function Modal({ isOpen, onClose, title, children, className, siz
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Overlay */}
           <motion.div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
             {...modalOverlay}
             onClick={onClose}
           />
           {/* Content */}
           <motion.div
             className={cn(
-              'relative w-full bg-white dark:bg-neutral-900 rounded-2xl shadow-elevated overflow-hidden',
+              'relative w-full bg-surface rounded-[1.75rem] shadow-[0_40px_100px_-30px_rgba(14,23,38,0.5)] ring-1 ring-line overflow-hidden',
               sizes[size],
               className
             )}
@@ -33,20 +33,22 @@ export default function Modal({ isOpen, onClose, title, children, className, siz
           >
             {/* Header */}
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
-                <h3 className="text-lg font-heading font-semibold text-neutral-900 dark:text-neutral-50">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+                <h3 className="font-display text-lg font-medium tracking-[-0.02em] text-ink">
                   {title}
                 </h3>
                 <button
+                  type="button"
                   onClick={onClose}
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 transition-colors"
+                  aria-label="Close"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-ink-faint hover:text-ink hover:bg-ink/6 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             )}
             {/* Body */}
-            <div className="p-6">{children}</div>
+            <div className="max-h-[calc(100dvh-9rem)] overflow-y-auto overscroll-contain p-6">{children}</div>
           </motion.div>
         </div>
       )}

@@ -1,13 +1,27 @@
 import { cn } from '@/utils/cn';
+import logo320 from '@/assets/home/logo-320.webp';
+import logo640 from '@/assets/home/logo-640.webp';
+import logo1280 from '@/assets/home/logo-1280.webp';
 
-// Text wordmark used in place of the image logo
-export default function BrandWordmark({ className }) {
+/**
+ * The 1SKYSTORE logo, served as optimized WebP (master: src/assets/logo.png).
+ * Size it with a height class, e.g. className="h-12"; width follows the
+ * logo's ~2.3:1 ratio. `priority` loads it eagerly (use for the navbar).
+ */
+export default function BrandWordmark({ className, priority = false }) {
   return (
-    <span className={cn('inline-flex items-baseline font-heading font-bold tracking-tight leading-none whitespace-nowrap', className)}>
-      <span className="bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent dark:from-primary-300 dark:to-secondary-400">
-        1SKY
-      </span>
-      <span className="text-neutral-900 dark:text-white">STORE</span>
-    </span>
+    <img
+      src={logo640}
+      srcSet={`${logo320} 320w, ${logo640} 640w, ${logo1280} 1280w`}
+      sizes="(min-width: 640px) 240px, 160px"
+      width={640}
+      height={278}
+      alt="1SkyStore — Homeopathic medicines & more"
+      loading={priority ? 'eager' : 'lazy'}
+      fetchPriority={priority ? 'high' : undefined}
+      decoding="async"
+      draggable={false}
+      className={cn('block h-10 w-auto select-none object-contain', className)}
+    />
   );
 }

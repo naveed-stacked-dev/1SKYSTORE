@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useId, useState } from 'react';
 import { cn } from '@/utils/cn';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -10,6 +10,8 @@ const Input = forwardRef(({
   type = 'text',
   ...props
 }, ref) => {
+  const generatedId = useId();
+  const fieldId = props.id || generatedId;
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
   const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
@@ -17,29 +19,28 @@ const Input = forwardRef(({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+        <label htmlFor={fieldId} className="block text-[13px] font-medium text-ink-soft mb-1.5">
           {label}
         </label>
       )}
       <div className="relative">
         {Icon && (
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint">
             <Icon className="w-4 h-4" />
           </div>
         )}
         <input
           ref={ref}
+          id={fieldId}
           type={inputType}
           className={cn(
-            'w-full rounded-xl border bg-white px-4 py-3 text-sm text-neutral-800 transition-all duration-200',
-            'placeholder:text-neutral-400',
-            'focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500',
-            'dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500',
-            'dark:focus:ring-primary-500/30 dark:focus:border-primary-500',
+            'w-full min-h-12 rounded-2xl border bg-surface px-4 py-3 text-[15px] text-ink transition-[border-color,box-shadow] duration-200',
+            'placeholder:text-ink-faint',
+            'focus:outline-none focus:ring-4 focus:ring-accent/15 focus:border-accent',
             error
-              ? 'border-error-500 focus:ring-error-500/30 focus:border-error-500'
-              : 'border-neutral-200 dark:border-neutral-700',
-            Icon && 'pl-10',
+              ? 'border-error-500 focus:ring-error-500/15 focus:border-error-500'
+              : 'border-line',
+            Icon && 'pl-11',
             isPassword && 'pr-10',
             className
           )}
@@ -49,7 +50,8 @@ const Input = forwardRef(({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full text-ink-faint hover:text-ink hover:bg-ink/6 transition-colors"
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>

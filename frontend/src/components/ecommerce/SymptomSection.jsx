@@ -3,9 +3,20 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import productService from '@/api/product.service';
 import { fetchWithCache } from '@/utils/apiCache';
-import { staggerContainer, staggerItem } from '@/animations/variants';
+import { revealGroup, revealUp } from '@/animations/variants';
+import Eyebrow from '@/components/home/ui/Eyebrow';
+import { CONTAINER } from '@/components/home/ui/styles';
+import { cn } from '@/utils/cn';
 
-export default function SymptomSection({ bgClass = "bg-neutral-50/50 dark:bg-neutral-900/30" }) {
+const MotionDiv = motion.div;
+const MotionSpan = motion.span;
+
+const MODES = [
+  { id: 'view-all', label: 'View all' },
+  { id: 'slider', label: 'Slider' },
+];
+
+export default function SymptomSection({ bgClass = 'bg-canvas' }) {
   const [symptoms, setSymptoms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState('view-all'); // 'view-all' or 'slider'
@@ -33,68 +44,78 @@ export default function SymptomSection({ bgClass = "bg-neutral-50/50 dark:bg-neu
   const displaySymptoms = showAll ? symptoms : symptoms.slice(0, 15);
 
   return (
-    <section className={`py-16 sm:py-20 ${bgClass}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
-          <h2 className="text-2xl sm:text-3xl font-heading font-semibold text-neutral-900 dark:text-neutral-50">
-            Browse by Symptoms
-          </h2>
-          
+    <section className={cn('py-16 sm:py-24', bgClass)}>
+      <div className={CONTAINER}>
+
+        <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Eyebrow>Shop by concern</Eyebrow>
+            <h2 className="font-display mt-4 text-[clamp(1.75rem,3.4vw,2.75rem)] font-medium leading-[1.05] tracking-[-0.03em] text-ink">
+              Browse by Symptoms
+            </h2>
+          </div>
+
           {/* Toggle View all / Slider */}
-          <div className="hidden sm:inline-flex items-center p-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full shadow-sm">
-            <button
-              onClick={() => setMode('view-all')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                mode === 'view-all' 
-                ? 'bg-primary-800 text-white shadow-sm' 
-                : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 bg-transparent'
-              }`}
-            >
-              View all
-            </button>
-            <button
-              onClick={() => setMode('slider')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                mode === 'slider' 
-                ? 'bg-primary-800 text-white shadow-sm' 
-                : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 bg-transparent'
-              }`}
-            >
-              Slider
-            </button>
+          <div role="group" aria-label="Symptom layout" className="hidden shrink-0 items-center rounded-full p-1 ring-1 ring-inset ring-line sm:inline-flex">
+            {MODES.map((m) => {
+              const active = mode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setMode(m.id)}
+                  className={cn(
+                    'relative min-h-10 rounded-full px-5 text-sm font-medium transition-colors duration-300',
+                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+                    active ? 'text-canvas' : 'text-ink-soft hover:text-ink'
+                  )}
+                >
+                  {active && (
+                    <MotionSpan
+                      layoutId="symptom-mode-pill"
+                      className="absolute inset-0 rounded-full bg-ink"
+                      transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+                    />
+                  )}
+                  <span className="relative">{m.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {loading ? (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3" aria-label="Loading symptoms">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="skeleton-shimmer h-10 w-32 rounded-full" />
+              <div key={i} className="skeleton-shimmer h-11 w-32 rounded-full" />
             ))}
           </div>
         ) : (
           <>
             <div className={`relative hidden ${mode === 'view-all' ? 'sm:block' : 'sm:hidden'}`}>
-              <motion.div 
+              <MotionDiv
                 key={displaySymptoms.length}
-                className="flex flex-wrap gap-3"
-                variants={staggerContainer}
-                initial="initial"
-                whileInView="animate"
+                className="flex flex-wrap gap-2.5"
+                variants={revealGroup(0.025)}
+                initial="hidden"
+                whileInView="show"
                 viewport={{ once: true }}
               >
                 {displaySymptoms.map((symptom, i) => (
-                  <motion.div key={i} variants={staggerItem}>
+                  <MotionDiv key={i} variants={revealUp}>
                     <SymptomChip symptom={symptom} />
-                  </motion.div>
+                  </MotionDiv>
                 ))}
-              </motion.div>
-              
+              </MotionDiv>
+
               {symptoms.length > 15 && (
-                <div className="mt-8 flex justify-center w-full">
-                  <button 
+                <div className="mt-10 flex w-full justify-center">
+                  <button
+                    type="button"
                     onClick={() => setShowAll(!showAll)}
-                    className="px-6 py-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm font-semibold text-neutral-700 dark:text-neutral-300 shadow-sm hover:border-primary-300 transition-colors"
+                    aria-expanded={showAll}
+                    className="inline-flex min-h-11 items-center rounded-full px-6 text-sm font-medium text-ink ring-1 ring-inset ring-line transition-colors duration-300 hover:bg-ink hover:text-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                   >
                     {showAll ? 'Less' : 'More'}
                   </button>
@@ -103,20 +124,20 @@ export default function SymptomSection({ bgClass = "bg-neutral-50/50 dark:bg-neu
             </div>
 
             {/* Slider Mode */}
-            <div className={`overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 block ${mode === 'slider' ? 'sm:block' : 'sm:hidden'}`}>
-               <motion.div 
-                className="flex gap-3 min-w-max"
-                variants={staggerContainer}
-                initial="initial"
-                whileInView="animate"
+            <div className={`-mx-4 block overflow-x-auto px-4 pb-4 no-scrollbar sm:mx-0 sm:px-0 ${mode === 'slider' ? 'sm:block' : 'sm:hidden'}`}>
+              <MotionDiv
+                className="flex min-w-max gap-2.5"
+                variants={revealGroup(0.025)}
+                initial="hidden"
+                whileInView="show"
                 viewport={{ once: true }}
               >
                 {symptoms.map((symptom, i) => (
-                  <motion.div key={i} variants={staggerItem}>
+                  <MotionDiv key={i} variants={revealUp}>
                     <SymptomChip symptom={symptom} />
-                  </motion.div>
+                  </MotionDiv>
                 ))}
-              </motion.div>
+              </MotionDiv>
             </div>
           </>
         )}
@@ -128,9 +149,9 @@ export default function SymptomSection({ bgClass = "bg-neutral-50/50 dark:bg-neu
 function SymptomChip({ symptom }) {
   const name = typeof symptom === 'string' ? symptom : symptom.name;
   return (
-    <Link 
+    <Link
       to={`/shop?symptom=${encodeURIComponent(name)}`}
-      className="inline-flex items-center px-5 py-2.5 rounded-full bg-[#eaf1fa] dark:bg-primary-900/20 border border-[#d3e1f2] dark:border-primary-800/50 text-[13px] font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-primary-500 hover:border-primary-500 hover:text-white hover:shadow-glow hover:-translate-y-0.5 dark:hover:bg-primary-600 dark:hover:border-primary-600 transition-all duration-200 shadow-sm"
+      className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full bg-surface px-5 text-sm font-medium text-ink ring-1 ring-inset ring-line transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-ink hover:text-canvas hover:ring-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       {name}
     </Link>

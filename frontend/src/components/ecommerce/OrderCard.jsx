@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Package, ChevronRight } from 'lucide-react';
+import { Package, ArrowUpRight } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import { formatPrice } from '@/utils/formatPrice';
 
@@ -27,35 +27,41 @@ export default function OrderCard({ order }) {
   return (
     <Link
       to={`/orders/${order.id}`}
-      className="block p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:shadow-card transition-shadow group"
+      className="group flex flex-col gap-5 rounded-[1.75rem] bg-surface p-5 ring-1 ring-line transition-shadow duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:ring-ink/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:flex-row sm:items-center sm:gap-6 sm:p-6"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
-            <Package className="w-5 h-5 text-primary-500" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100">
-              Order #{order.id}
-            </p>
-            <p className="text-xs text-neutral-400 mt-0.5">
-              {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ''}
-            </p>
-          </div>
+      <div className="flex min-w-0 flex-1 items-center gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-mist text-ink-soft transition-colors duration-500 group-hover:bg-accent-soft group-hover:text-accent">
+          <Package className="h-5 w-5" aria-hidden="true" />
         </div>
-        <Badge variant={statusVariants[statusKey] || 'default'}>
-          {badgeLabel}
-        </Badge>
-      </div>
-
-      <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800">
-        <div>
-          <p className="text-xs text-neutral-400">Total</p>
-          <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-            {formatPrice(order.total_amount || order.total || 0, order.currency)}
+        <div className="min-w-0">
+          <p className="font-display text-lg font-medium tracking-[-0.02em] text-ink">
+            Order #{order.id}
+          </p>
+          <p className="mt-0.5 text-sm tabular-nums text-ink-faint">
+            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ''}
           </p>
         </div>
-        <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-primary-500 transition-colors" />
+      </div>
+
+      <div className="flex items-center justify-between gap-4 border-t border-line pt-4 sm:contents">
+        <Badge variant={statusVariants[statusKey] || 'default'} className="capitalize sm:order-none">
+          {badgeLabel}
+        </Badge>
+
+        <div className="flex items-center gap-4 sm:gap-6">
+          <div className="text-right">
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-ink-faint">Total</p>
+            <p className="mt-0.5 font-display text-lg font-medium tabular-nums text-ink">
+              {formatPrice(order.total_amount || order.total || 0, order.currency)}
+            </p>
+          </div>
+          <span
+            className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-ink ring-1 ring-inset ring-line transition-colors duration-500 group-hover:bg-ink group-hover:text-canvas"
+            aria-hidden="true"
+          >
+            <ArrowUpRight className="h-4 w-4 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </span>
+        </div>
       </div>
     </Link>
   );

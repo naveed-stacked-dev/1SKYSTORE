@@ -1,9 +1,17 @@
 import { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import ProductCard from '@/components/ecommerce/ProductCard';
-import { staggerContainer, staggerItem } from '@/animations/variants';
+import { ProductCardSkeleton } from '@/components/ui/Skeleton';
+import RoundButton from '@/components/home/ui/RoundButton';
+import { TextLink } from '@/components/home/ui/PillLink';
+import { CONTAINER } from '@/components/home/ui/styles';
+import { revealGroup, revealUp } from '@/animations/variants';
+import { cn } from '@/utils/cn';
+
+const MotionDiv = motion.div;
+
+const CARD_WIDTH = 'w-[68vw] sm:w-[40vw] md:w-[30vw] lg:w-[calc((100%-3*1.5rem)/4)]';
 
 export default function ProductRow({ title, products, isLoading, viewAllLink }) {
   const scrollRef = useRef(null);
@@ -29,76 +37,61 @@ export default function ProductRow({ title, products, isLoading, viewAllLink }) 
     }
   };
 
+  const hasProducts = !isLoading && products?.length > 0;
+
   return (
-    <div className="relative w-full py-8">
+    <div className={cn(CONTAINER, 'relative py-10 sm:py-14')}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <h2 className="text-2xl font-heading font-bold text-neutral-900 dark:text-neutral-50">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 sm:mb-10">
+        <h2 className="font-display min-w-0 text-[clamp(1.75rem,3.4vw,2.75rem)] font-medium leading-[1.05] tracking-[-0.03em] text-ink">
           {title}
         </h2>
-        {viewAllLink && (
-          <Link
-            to={viewAllLink}
-            className="text-sm font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors flex items-center gap-1"
-          >
-            See All <ChevronRight className="w-4 h-4" />
-          </Link>
-        )}
+        <div className="flex items-center gap-5">
+          {viewAllLink && <TextLink to={viewAllLink}>See All</TextLink>}
+          {hasProducts && (
+            <div className="hidden gap-2 sm:flex">
+              <RoundButton label="Scroll left" disabled={!showLeftArrow} onClick={() => scroll('left')}>
+                <ArrowLeft className="h-4 w-4" />
+              </RoundButton>
+              <RoundButton label="Scroll right" disabled={!showRightArrow} onClick={() => scroll('right')}>
+                <ArrowRight className="h-4 w-4" />
+              </RoundButton>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Loading Skeleton */}
       {isLoading ? (
-        <div className="flex gap-4 overflow-hidden px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex-shrink-0 w-[240px] sm:w-[280px] aspect-[3/4] rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+        <div className="flex gap-4 overflow-hidden lg:gap-6" aria-label="Loading products">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className={cn('shrink-0', CARD_WIDTH)}>
+              <ProductCardSkeleton />
+            </div>
           ))}
         </div>
       ) : products?.length > 0 ? (
-        <div className="relative group max-w-[1400px] mx-auto">
-          {/* Scroll Arrows */}
-          {showLeftArrow && (
-            <button
-              onClick={() => scroll('left')}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/90 dark:bg-neutral-900/90 shadow-lg text-neutral-700 dark:text-neutral-300 hover:text-primary-500 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block border border-neutral-200 dark:border-neutral-800"
+        <MotionDiv
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:scroll-px-0 lg:gap-6 lg:px-0"
+          variants={revealGroup(0.07)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.15 }}
+        >
+          {products.map((product) => (
+            <MotionDiv
+              key={product.id}
+              variants={revealUp}
+              className={cn('flex shrink-0 snap-start', CARD_WIDTH)}
             >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-          )}
-          
-          {showRightArrow && (
-            <button
-              onClick={() => scroll('right')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/90 dark:bg-neutral-900/90 shadow-lg text-neutral-700 dark:text-neutral-300 hover:text-primary-500 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block border border-neutral-200 dark:border-neutral-800"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          )}
-
-          {/* Scrolling Container */}
-          <motion.div
-            ref={scrollRef}
-            onScroll={handleScroll}
-            className="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory no-scrollbar px-4 sm:px-6 lg:px-8 pb-8"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: '-100px' }}
-          >
-            {products.map((product) => (
-              <motion.div
-                key={product.id}
-                variants={staggerItem}
-                className="flex-shrink-0 w-[240px] sm:w-[280px] snap-start flex"
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
+              <ProductCard product={product} />
+            </MotionDiv>
+          ))}
+        </MotionDiv>
       ) : (
-        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <p className="text-neutral-500 text-sm">No products found.</p>
-        </div>
+        <p className="text-[15px] text-ink-soft">No products found.</p>
       )}
     </div>
   );

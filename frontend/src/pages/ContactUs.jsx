@@ -1,7 +1,16 @@
-import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import PageHeader from '@/components/common/PageHeader';
+import { CONTAINER } from '@/components/home/ui/styles';
+import { revealGroup, revealUp, IN_VIEW, EASE_OUT } from '@/animations/variants';
+
+const MotionDiv = motion.div;
+const MotionLi = motion.li;
+
+const LABEL = 'mb-1.5 block text-[13px] font-medium text-ink-soft';
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -29,154 +38,174 @@ export default function ContactUs() {
     }, 1500);
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="container mx-auto px-4 py-12 md:py-20 max-w-6xl"
-    >
-      <div className="text-center mb-16">
-        <h1 className="text-4xl md:text-5xl font-heading font-bold text-neutral-900 dark:text-white mb-4">
-          Contact Us
-        </h1>
-        <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-          We're here to help! If you have any questions about our products, your order, or homeopathy in general, please don't hesitate to reach out.
-        </p>
-      </div>
+  const channels = [
+    { icon: Phone, title: 'Phone', note: 'Call us directly', value: '9705950500', href: 'tel:9705950500' },
+    { icon: Mail, title: 'Email', note: 'Send us an email', value: 'instahomeo4u@gmail.com', href: 'mailto:instahomeo4u@gmail.com' },
+    { icon: MapPin, title: 'Location', note: 'Visit our store', value: 'Hyderabad, India' },
+  ];
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+  return (
+    <div className="bg-canvas pb-24 sm:pb-32">
+      <PageHeader
+        eyebrow="Support"
+        title="Contact Us"
+        intro="We're here to help! If you have any questions about our products, your order, or homeopathy in general, please don't hesitate to reach out."
+      />
+
+      <div className={`${CONTAINER} grid grid-cols-1 items-start gap-14 lg:grid-cols-12 lg:gap-10`}>
         {/* Contact Info */}
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">Get in Touch</h2>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-8 leading-relaxed">
+        <MotionDiv
+          variants={revealGroup(0.08, 0.2)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
+          className="lg:col-span-5"
+        >
+          <MotionDiv variants={revealUp}>
+            <h2 className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-medium leading-[1.05] tracking-[-0.035em] text-ink">
+              Get in Touch
+            </h2>
+            <p className="mt-4 max-w-md text-base leading-relaxed text-ink-soft sm:text-[17px]">
               Our support team is available Monday to Saturday, 11 AM – 9 PM. We aim to respond to all inquiries within 24 hours.
             </p>
-          </div>
+          </MotionDiv>
 
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl shrink-0">
-                <Phone className="w-6 h-6 text-primary-500" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-neutral-900 dark:text-white text-lg">Phone</h3>
-                <p className="text-neutral-500 dark:text-neutral-400 mb-1">Call us directly</p>
-                <a href="tel:9705950500" className="text-primary-600 hover:text-primary-700 font-medium">9705950500</a>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl shrink-0">
-                <Mail className="w-6 h-6 text-primary-500" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-neutral-900 dark:text-white text-lg">Email</h3>
-                <p className="text-neutral-500 dark:text-neutral-400 mb-1">Send us an email</p>
-                <a href="mailto:instahomeo4u@gmail.com" className="text-primary-600 hover:text-primary-700 font-medium">instahomeo4u@gmail.com</a>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl shrink-0">
-                <MapPin className="w-6 h-6 text-primary-500" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-neutral-900 dark:text-white text-lg">Location</h3>
-                <p className="text-neutral-500 dark:text-neutral-400 mb-1">Visit our store</p>
-                <p className="text-neutral-900 dark:text-white font-medium">Hyderabad, India</p>
-              </div>
-            </div>
-          </div>
-        </div>
+          <ul className="mt-10 space-y-3">
+            {channels.map((channel) => (
+              <MotionLi key={channel.title} variants={revealUp}>
+                <ContactCard {...channel} />
+              </MotionLi>
+            ))}
+          </ul>
+        </MotionDiv>
 
         {/* Contact Form */}
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 p-8 md:p-10 rounded-3xl shadow-sm">
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">Send us a Message</h2>
-          
-          {isSuccess && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-xl flex items-center gap-3"
-            >
-              <div className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
-              Your message has been sent successfully. We will get back to you soon!
-            </motion.div>
-          )}
+        <MotionDiv
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.3, ease: EASE_OUT }}
+          className="rounded-[2rem] border border-line bg-surface p-6 sm:p-10 lg:col-span-7 lg:p-12"
+        >
+          <h2 className="font-display text-[clamp(1.5rem,2.6vw,2rem)] font-medium leading-[1.1] tracking-[-0.03em] text-ink">
+            Send us a Message
+          </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <AnimatePresence initial={false}>
+            {isSuccess && (
+              <MotionDiv
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.45, ease: EASE_OUT }}
+                className="overflow-hidden"
+              >
+                <div
+                  role="status"
+                  className="mt-6 flex items-start gap-3 rounded-2xl bg-success-50 p-4 text-[15px] text-success-700 ring-1 ring-inset ring-success-500/20 dark:bg-success-500/10 dark:text-success-500"
+                >
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                  Your message has been sent successfully. We will get back to you soon!
+                </div>
+              </MotionDiv>
+            )}
+          </AnimatePresence>
+
+          <form onSubmit={handleSubmit} className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Full Name</label>
-              <input
+              <label htmlFor="name" className={LABEL}>Full Name</label>
+              <Input
                 type="text"
                 id="name"
                 name="name"
                 required
+                autoComplete="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-sm dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-colors"
                 placeholder="John Doe"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-sm dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-colors"
-                placeholder="john@example.com"
               />
             </div>
 
             <div>
-              <label htmlFor="subject" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Subject</label>
-              <input
+              <label htmlFor="email" className={LABEL}>Email Address</label>
+              <Input
+                type="email"
+                id="email"
+                name="email"
+                required
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="john@example.com"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="subject" className={LABEL}>Subject</label>
+              <Input
                 type="text"
                 id="subject"
                 name="subject"
                 required
                 value={formData.subject}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-sm dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-colors"
                 placeholder="How can we help?"
               />
             </div>
 
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Message</label>
+            <div className="sm:col-span-2">
+              <label htmlFor="message" className={LABEL}>Message</label>
               <textarea
                 id="message"
                 name="message"
                 required
-                rows={5}
+                rows={6}
                 value={formData.message}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-sm dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-colors resize-none"
+                className="block w-full resize-none rounded-2xl border border-line bg-surface px-4 py-3 text-[15px] leading-relaxed text-ink transition-[border-color,box-shadow] duration-200 placeholder:text-ink-faint focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
                 placeholder="Write your message here..."
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full py-3.5 text-base flex justify-center"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Sending...' : (
-                <>
-                  <Send className="w-5 h-5 mr-2" />
-                  Send Message
-                </>
-              )}
-            </Button>
+            <div className="flex flex-col gap-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[13px] text-ink-faint">All fields are required.</p>
+              <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting}>
+                {isSubmitting ? 'Sending...' : (
+                  <>
+                    <Send className="h-4 w-4" aria-hidden="true" />
+                    Send Message
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
-        </div>
+        </MotionDiv>
       </div>
-    </motion.div>
+    </div>
+  );
+}
+
+function ContactCard({ icon, title, note, value, href }) {
+  const Icon = icon;
+
+  return (
+    <div className="group relative flex items-center gap-5 rounded-[1.75rem] border border-line bg-surface/60 p-5 transition-colors duration-500 hover:border-ink/20 hover:bg-surface sm:p-6">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent" aria-hidden="true">
+        <Icon className="h-5 w-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h3 className="font-display text-[11px] font-medium uppercase tracking-[0.2em] text-ink-faint">{title}</h3>
+        <p className="mt-0.5 text-[13px] text-ink-faint">{note}</p>
+        {href ? (
+          <a
+            href={href}
+            className="mt-1.5 block break-words font-display text-lg font-medium tracking-[-0.015em] text-ink transition-colors duration-300 before:absolute before:inset-0 before:rounded-[1.75rem] before:content-[''] group-hover:text-accent focus-visible:outline-none focus-visible:before:outline-2 focus-visible:before:outline-offset-2 focus-visible:before:outline-accent sm:text-xl"
+          >
+            {value}
+          </a>
+        ) : (
+          <p className="mt-1.5 font-display text-lg font-medium tracking-[-0.015em] text-ink sm:text-xl">{value}</p>
+        )}
+      </div>
+    </div>
   );
 }

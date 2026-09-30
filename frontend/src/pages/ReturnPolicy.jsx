@@ -1,98 +1,105 @@
-import { motion } from 'framer-motion';
 import { PackageX, ShieldAlert, RefreshCcw, Mail, Phone, CreditCard } from 'lucide-react';
+import PageHeader from '@/components/common/PageHeader';
+import { CONTAINER } from '@/components/home/ui/styles';
+import { PolicySection, TableOfContents } from '@/components/legal/LegalSections';
+import { PROSE, CONTACT_LINK, CONTACT_CHIP } from '@/components/legal/styles';
+
+const SECTIONS = [
+  { id: 'returns', title: 'Returns', icon: PackageX },
+  { id: 'refunds', title: 'Refunds', icon: RefreshCcw },
+  { id: 'order-cancellation', title: 'Order Cancellation', icon: ShieldAlert },
+];
 
 export default function ReturnPolicy() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="container mx-auto px-4 py-12 md:py-20 max-w-4xl"
-    >
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-heading font-bold text-neutral-900 dark:text-white mb-4">
-          Return & Refund Policy
-        </h1>
-        <p className="text-lg text-neutral-600 dark:text-neutral-400">
-          At 1SkyStore, we strive to deliver genuine and high-quality homeopathic medicines to our customers across India. Due to the nature of healthcare products, our return and refund policy is designed to ensure safety, hygiene, and product integrity.
-        </p>
-      </div>
+    <div className="bg-canvas pb-24 sm:pb-32">
+      <PageHeader eyebrow="Legal" title="Return & Refund Policy" />
 
-      <div className="space-y-12">
-        {/* Returns Section */}
-        <section className="bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center gap-3 mb-6">
-            <PackageX className="w-8 h-8 text-primary-500" />
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Returns</h2>
-          </div>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-4 font-medium">
-            Homeopathic medicines are non-returnable once delivered because they fall under healthcare and consumable products.
+      <div className={`${CONTAINER} grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-10`}>
+        <aside className="lg:col-span-3">
+          <TableOfContents sections={SECTIONS} />
+        </aside>
+
+        <div className="min-w-0 lg:col-span-8 lg:col-start-5">
+          <p className="max-w-[68ch] border-b border-line pb-10 font-display text-[clamp(1.2rem,2vw,1.45rem)] leading-[1.45] tracking-[-0.015em] text-ink sm:pb-14">
+            At 1SkyStore, we strive to deliver genuine and high-quality homeopathic medicines to our customers across India. Due to the nature of healthcare products, our return and refund policy is designed to ensure safety, hygiene, and product integrity.
           </p>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-4">
-            However, returns may be accepted under the following conditions:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400 mb-6 ml-4">
-            <li>The product received is damaged during transit</li>
-            <li>The product received is incorrect or different from the order placed</li>
-            <li>The package received is tampered or leaking</li>
-          </ul>
-          <div className="bg-primary-50 dark:bg-primary-900/20 p-4 rounded-xl border border-primary-100 dark:border-primary-800/30">
-            <h3 className="font-semibold text-primary-900 dark:text-primary-100 mb-2">To request a return:</h3>
-            <p className="text-sm text-primary-800 dark:text-primary-200 mb-2">Please contact us within 48 hours of delivery with the following details:</p>
-            <ul className="list-disc list-inside text-sm text-primary-800 dark:text-primary-200 ml-2 space-y-1">
-              <li>Order ID</li>
-              <li>Photos of the product and packaging</li>
-              <li>Description of the issue</li>
-            </ul>
-            <div className="mt-4 flex items-center gap-2 text-sm text-primary-800 dark:text-primary-200">
-              <Mail className="w-4 h-4" /> instahomeo4u@gmail.com
+
+          {/* Returns Section */}
+          <PolicySection sections={SECTIONS} index={0}>
+            <div className={PROSE}>
+              <p className="font-medium text-ink">
+                Homeopathic medicines are non-returnable once delivered because they fall under healthcare and consumable products.
+              </p>
+              <p>
+                However, returns may be accepted under the following conditions:
+              </p>
+              <ul>
+                <li>The product received is damaged during transit</li>
+                <li>The product received is incorrect or different from the order placed</li>
+                <li>The package received is tampered or leaking</li>
+              </ul>
             </div>
-          </div>
-        </section>
-
-        {/* Refunds Section */}
-        <section className="bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center gap-3 mb-6">
-            <RefreshCcw className="w-8 h-8 text-secondary-500" />
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Refunds</h2>
-          </div>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-4">
-            Once your request is verified, we will process your refund or replacement. Refunds will be issued in the following situations:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400 mb-6 ml-4">
-            <li>Damaged product received</li>
-            <li>Incorrect product delivered</li>
-            <li>Order cancelled before dispatch</li>
-          </ul>
-          <div className="flex items-start gap-3 bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-xl">
-            <CreditCard className="w-5 h-5 text-neutral-500 mt-0.5 shrink-0" />
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              Refunds are typically processed within <span className="font-semibold">5–7 business days</span> after approval and will be credited to the original payment method.
-            </p>
-          </div>
-        </section>
-
-        {/* Cancellation Section */}
-        <section className="bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center gap-3 mb-6">
-            <ShieldAlert className="w-8 h-8 text-red-500" />
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Order Cancellation</h2>
-          </div>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-            Orders can be cancelled before they are shipped. Once the order has been dispatched, cancellation may not be possible.
-          </p>
-          <div className="bg-neutral-50 dark:bg-neutral-800/50 p-6 rounded-xl text-center">
-            <p className="font-semibold text-neutral-900 dark:text-white mb-4">For cancellation requests, contact us immediately:</p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
-              <a href="mailto:instahomeo4u@gmail.com" className="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors">
-                <Mail className="w-5 h-5" /> instahomeo4u@gmail.com
-              </a>
-              <a href="tel:9705950500" className="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors">
-                <Phone className="w-5 h-5" /> 9705950500
-              </a>
+            <div className="mt-8 max-w-[68ch] rounded-[1.75rem] bg-accent-soft/60 p-6 sm:p-8">
+              <h3 className="font-display text-xl font-medium tracking-[-0.02em] text-ink">To request a return:</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">Please contact us within 48 hours of delivery with the following details:</p>
+              <ul className="mt-4 divide-y divide-line border-y border-line text-[15px] text-ink">
+                <li className="flex items-center gap-3 py-3"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />Order ID</li>
+                <li className="flex items-center gap-3 py-3"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />Photos of the product and packaging</li>
+                <li className="flex items-center gap-3 py-3"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />Description of the issue</li>
+              </ul>
+              <p className="mt-5 flex min-w-0 items-center gap-2.5 text-[15px] font-medium text-ink">
+                <Mail className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+                <span className="break-all">instahomeo4u@gmail.com</span>
+              </p>
             </div>
-          </div>
-        </section>
+          </PolicySection>
+
+          {/* Refunds Section */}
+          <PolicySection sections={SECTIONS} index={1}>
+            <div className={PROSE}>
+              <p>
+                Once your request is verified, we will process your refund or replacement. Refunds will be issued in the following situations:
+              </p>
+              <ul>
+                <li>Damaged product received</li>
+                <li>Incorrect product delivered</li>
+                <li>Order cancelled before dispatch</li>
+              </ul>
+            </div>
+            <div className="mt-8 flex max-w-[68ch] items-start gap-4 rounded-2xl border border-line bg-surface p-5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mist text-ink" aria-hidden="true">
+                <CreditCard className="h-4 w-4" />
+              </span>
+              <p className="text-[15px] leading-relaxed text-ink-soft">
+                Refunds are typically processed within <span className="font-semibold text-ink">5–7 business days</span> after approval and will be credited to the original payment method.
+              </p>
+            </div>
+          </PolicySection>
+
+          {/* Cancellation Section */}
+          <PolicySection sections={SECTIONS} index={2}>
+            <div className={PROSE}>
+              <p>
+                Orders can be cancelled before they are shipped. Once the order has been dispatched, cancellation may not be possible.
+              </p>
+            </div>
+            <div className="mt-8 max-w-[68ch] rounded-[2rem] border border-line bg-surface px-6 py-8 sm:px-10 sm:py-10">
+              <p className="font-display text-xl font-medium tracking-[-0.02em] text-ink">For cancellation requests, contact us immediately:</p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <a href="mailto:instahomeo4u@gmail.com" className={CONTACT_LINK}>
+                  <span className={CONTACT_CHIP} aria-hidden="true"><Mail className="h-4 w-4" /></span>
+                  <span className="min-w-0 break-all">instahomeo4u@gmail.com</span>
+                </a>
+                <a href="tel:9705950500" className={CONTACT_LINK}>
+                  <span className={CONTACT_CHIP} aria-hidden="true"><Phone className="h-4 w-4" /></span>
+                  9705950500
+                </a>
+              </div>
+            </div>
+          </PolicySection>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

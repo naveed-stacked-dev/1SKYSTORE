@@ -91,6 +91,132 @@
   --animate-shimmer: shimmer 1.5s infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-float-delayed: float 7s ease-in-out 1.5s infinite;
+
+  /* ---- Storefront (homepage, navbar, footer) ---- */
+  --font-display: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  --animate-marquee: marquee var(--marquee-duration, 48s) linear infinite;
+  --animate-spin-slowest: spin 28s linear infinite;
+  --animate-breathe: breathe 3.2s ease-in-out infinite;
+  --animate-loader: loader-sweep 1.1s ease-in-out infinite;
+}
+
+/* ============================================
+   STOREFRONT PALETTE
+   Semantic tokens that swap for dark mode, so
+   components use one class (bg-canvas, text-ink)
+   instead of paired light/dark utilities.
+   ============================================ */
+
+:root {
+  --c-canvas: #F5F3EE;      /* warm bone page background */
+  --c-surface: #FFFFFF;
+  --c-mist: #ECE9E2;        /* quiet secondary surface */
+  --c-plate: #EDEAE3;       /* seat for white-background packshots */
+  --c-ink: #0E1726;         /* midnight — text & primary actions */
+  --c-ink-soft: #4A5566;
+  --c-ink-faint: #616A78;
+  --c-line: rgba(14, 23, 38, 0.1);
+  --c-accent: #1565C0;      /* brand blue — the single accent */
+  --c-accent-soft: #DCE8F7;
+  --c-deep: #0E1726;        /* inverse blocks */
+  --c-on-deep: #F3F1EC;
+  --c-on-deep-soft: rgba(243, 241, 236, 0.66);
+  --c-tint-1: #E3E8DF;      /* category plates */
+  --c-tint-2: #E6E3F0;
+  --c-tint-3: #F0E6DA;
+  --c-tint-4: #DDE6EE;
+  --c-tint-5: #EFE2E2;
+}
+
+.dark {
+  --c-canvas: #0A0F16;
+  --c-surface: #111821;
+  --c-mist: #161F2A;
+  --c-plate: #D8D4CB;
+  --c-ink: #EEF0EA;
+  --c-ink-soft: #AAB2BD;
+  --c-ink-faint: #8C95A1;
+  --c-line: rgba(238, 240, 234, 0.1);
+  --c-accent: #6BA4E2;
+  --c-accent-soft: #13233A;
+  --c-deep: #131C27;
+  --c-on-deep: #F3F1EC;
+  --c-on-deep-soft: rgba(243, 241, 236, 0.66);
+  --c-tint-1: #1A2520;
+  --c-tint-2: #1D1C28;
+  --c-tint-3: #262019;
+  --c-tint-4: #17212B;
+  --c-tint-5: #261C1D;
+}
+
+@theme inline {
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-mist: var(--c-mist);
+  --color-plate: var(--c-plate);
+  --color-ink: var(--c-ink);
+  --color-ink-soft: var(--c-ink-soft);
+  --color-ink-faint: var(--c-ink-faint);
+  --color-line: var(--c-line);
+  --color-accent: var(--c-accent);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-deep: var(--c-deep);
+  --color-on-deep: var(--c-on-deep);
+  --color-on-deep-soft: var(--c-on-deep-soft);
+  --color-tint-1: var(--c-tint-1);
+  --color-tint-2: var(--c-tint-2);
+  --color-tint-3: var(--c-tint-3);
+  --color-tint-4: var(--c-tint-4);
+  --color-tint-5: var(--c-tint-5);
+}
+
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes loader-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
+@keyframes banner-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Fade the ends of horizontal tracks (marquees, rails) */
+.mask-fade-x {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+}
+
+/* Film grain for large flat surfaces — keeps gradients from banding */
+.bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+}
+.dark .bg-grain {
+  mix-blend-mode: screen;
+  opacity: 0.035;
+}
+
+.animate-marquee:hover,
+.animate-marquee:focus-within {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-spin-slowest,
+  .animate-breathe {
+    animation: none;
+  }
 }
 
 /* Keyframes */
@@ -144,17 +270,14 @@ html {
 body {
   font-family: var(--font-sans);
   line-height: 1.6;
-  background-color: var(--color-neutral-50);
-  background-image: radial-gradient(var(--color-neutral-200) 1.5px, transparent 1.5px);
-  background-size: 32px 32px;
-  color: var(--color-neutral-900);
+  background-color: var(--c-canvas);
+  color: var(--c-ink);
 }
 
 /* ---- Dark Mode Body ---- */
 .dark body {
-  background-color: var(--color-neutral-950);
-  background-image: radial-gradient(var(--color-neutral-800) 1.5px, transparent 1.5px);
-  color: var(--color-neutral-100);
+  background-color: var(--c-canvas);
+  color: var(--c-ink);
 }
 
 /* ---- Typography ---- */
@@ -162,6 +285,15 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   line-height: 1.2;
   letter-spacing: -0.02em;
+}
+
+/* Storefront display headings take font, leading and tracking from their
+   utilities. The unlayered h1–h6 rule above would otherwise win over every
+   (layered) Tailwind utility; revert-layer hands control back. */
+:is(h1, h2, h3, h4, h5, h6).font-display {
+  font-family: revert-layer;
+  line-height: revert-layer;
+  letter-spacing: revert-layer;
 }
 
 /* ---- Scrollbar Styling ---- */
@@ -182,8 +314,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ---- Selection ---- */
 ::selection {
-  background-color: var(--color-primary-200);
-  color: var(--color-primary-900);
+  background-color: var(--c-accent-soft);
+  color: var(--c-ink);
 }
 .dark ::selection {
   background-color: var(--color-primary-700);
@@ -198,12 +330,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ---- Skeleton Shimmer ---- */
 .skeleton-shimmer {
-  background: linear-gradient(90deg, var(--color-neutral-200) 25%, var(--color-neutral-100) 50%, var(--color-neutral-200) 75%);
+  background: linear-gradient(90deg, var(--c-mist) 25%, var(--c-canvas) 50%, var(--c-mist) 75%);
   background-size: 400% 100%;
   animation: shimmer 1.5s infinite;
 }
 .dark .skeleton-shimmer {
-  background: linear-gradient(90deg, var(--color-neutral-800) 25%, var(--color-neutral-700) 50%, var(--color-neutral-800) 75%);
+  background: linear-gradient(90deg, var(--c-mist) 25%, var(--c-surface) 50%, var(--c-mist) 75%);
   background-size: 400% 100%;
 }
 
@@ -230,6 +362,12 @@ h1, h2, h3, h4, h5, h6 {
 .bg-dots-light {
   background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1.2px, transparent 1.2px);
   background-size: 22px 22px;
+}
+
+/* Keep the WhatsApp launcher out of the way of the full-screen mobile menu */
+html[data-menu-open] .floating-whatsapp {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* WhatsApp Chat Input Fix - Aggressive */

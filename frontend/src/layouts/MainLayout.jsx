@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/common/Navbar';
 import Footer from '@/components/common/Footer';
@@ -7,9 +7,14 @@ import { FloatingWhatsApp } from 'react-floating-whatsapp'
 import logo from '@/assets/1skystore-avatar.svg';
 
 export default function MainLayout() {
+  const { pathname } = useLocation();
+  // The navbar is fixed; the homepage hero runs underneath it, other pages start below it
+  const navOverlaysContent = pathname === '/';
+
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300">
       <Navbar />
+      {!navOverlaysContent && <div aria-hidden="true" className="h-[4.75rem] shrink-0 sm:h-[5.25rem]" />}
       <motion.main
         className="flex-1"
         initial={pageTransition.initial}

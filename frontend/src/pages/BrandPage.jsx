@@ -4,7 +4,11 @@ import { motion } from 'framer-motion';
 import productService from '@/api/product.service';
 import ProductGrid from '@/components/ecommerce/ProductGrid';
 import Pagination from '@/components/ui/Pagination';
+import PageHeader from '@/components/common/PageHeader';
+import { CONTAINER } from '@/components/home/ui/styles';
 import { pageTransition } from '@/animations/variants';
+
+const MotionDiv = motion.div;
 
 export default function BrandPage() {
   const { slug } = useParams();
@@ -41,24 +45,23 @@ export default function BrandPage() {
   }
 
   return (
-    <motion.div {...pageTransition}>
-      <div className="bg-neutral-50/50 dark:bg-neutral-900/30 border-b border-neutral-100 dark:border-neutral-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          <p className="text-xs font-medium text-primary-500 uppercase tracking-widest mb-2">Brand</p>
-          <h1 className="text-3xl sm:text-4xl font-heading font-bold text-neutral-900 dark:text-white capitalize">
-            {decodeURIComponent(slug).replace(/-/g, ' ')}
-          </h1>
+    <MotionDiv {...pageTransition}>
+      <PageHeader
+        eyebrow="Brand"
+        title={decodeURIComponent(slug).replace(/-/g, ' ')}
+        className="[&_h1]:capitalize [&_h1]:[overflow-wrap:anywhere]"
+      />
+      <div className={`${CONTAINER} pb-24 sm:pb-32`}>
+        <div className="border-t border-line pt-10 sm:pt-12">
+          <ProductGrid products={products} loading={loading} />
+
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <ProductGrid products={products} loading={loading} />
-        
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-      </div>
-    </motion.div>
+    </MotionDiv>
   );
 }

@@ -4,6 +4,7 @@ import MainLayout from '@/layouts/MainLayout';
 import AuthLayout from '@/layouts/AuthLayout';
 import ProtectedRoute from '@/routes/ProtectedRoute';
 import PublicRoute from '@/routes/PublicRoute'; // IMPORT PUBLIC ROUTE
+import BrandWordmark from '@/components/common/BrandWordmark';
 
 // Lazy-loaded pages
 const Home = lazy(() => import('@/pages/Home'));
@@ -34,10 +35,13 @@ const ContactUs = lazy(() => import('@/pages/ContactUs'));
 
 function PageLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-neutral-500 text-sm font-medium">Loading...</p>
+    <div className="min-h-screen flex items-center justify-center bg-canvas" role="status">
+      <div className="flex flex-col items-center gap-5 animate-fade-in">
+        <BrandWordmark priority className="h-16" />
+        <span className="relative h-px w-28 overflow-hidden bg-line" aria-hidden="true">
+          <span className="animate-loader absolute inset-y-0 left-0 w-1/3 bg-ink" />
+        </span>
+        <span className="sr-only">Loading…</span>
       </div>
     </div>
   );

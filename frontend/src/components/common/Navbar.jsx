@@ -1,266 +1,284 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Search, ShoppingBag, User, LogOut, Package, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion';
+import { ChevronDown, Search } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useCart } from '@/context/CartContext';
-import ThemeToggle from '@/components/common/ThemeToggle';
-import SearchBar from '@/components/common/SearchBar';
-import Drawer from '@/components/ui/Drawer';
-import Button from '@/components/ui/Button';
-import { PUBLIC_NAV_LINKS, AUTH_NAV_LINKS } from '@/constants/navigation';
-import productService from '@/api/product.service';
+import { STORE_NAV } from '@/constants/navigation';
+import { subscribeCartFly } from '@/utils/cartFly';
 import { cn } from '@/utils/cn';
 import BrandWordmark from '@/components/common/BrandWordmark';
+import ThemeToggle from '@/components/common/ThemeToggle';
+import SearchBar from '@/components/common/SearchBar';
+import CartButton from './navbar/CartButton';
+import CategoriesPanel from './navbar/CategoriesPanel';
+import AccountMenu from './navbar/AccountMenu';
+import MobileMenu from './navbar/MobileMenu';
+import { ICON_BUTTON, EASE } from './navbar/styles';
+
+const MotionHeader = motion.header;
+const MotionDiv = motion.div;
+const MotionSpan = motion.span;
+
+const PANEL_CATEGORIES = 'nav-categories';
+const PANEL_SEARCH = 'nav-search';
+const MOBILE_MENU = 'nav-mobile-menu';
+const HIDE_AFTER = 480; // px scrolled before the bar may tuck away
+
+const isActivePath = (pathname, path) => (path === '/' ? pathname === '/' : pathname.startsWith(path));
 
 export default function Navbar() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [brands, setBrands] = useState([]);
-  const [isScrolled, setIsScrolled] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
-  const { itemCount } = useCart();
-  const location = useLocation();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
+  const [scrolled, setScrolled] = useState(() => typeof window !== 'undefined' && window.scrollY > 12);
+  const [tucked, setTucked] = useState(false);
+  const [panel, setPanel] = useState(null); // 'categories' | 'search' | null
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [hovered, setHovered] = useState(null);
+  const [lastPath, setLastPath] = useState(pathname);
+  const hoverTimer = useRef(null);
+
+  // Reset transient UI on navigation
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
+    setPanel(null);
+    setMobileOpen(false);
+    setTucked(false);
+  }
+
+  // Glass once scrolled; tuck away while reading down, return on the way up
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, 'change', (y) => {
+    const previous = scrollY.getPrevious() ?? 0;
+    setScrolled(y > 12);
+    if (y > previous + 4 && y > HIDE_AFTER) setTucked(true);
+    else if (y < previous - 4 || y <= HIDE_AFTER) setTucked(false);
+  });
+
+  // Bring the bar back when something flies into the cart
+  useEffect(() => subscribeCartFly(() => setTucked(false)), []);
+
+  const closePanel = useCallback(() => setPanel(null), []);
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+  const togglePanel = (name) => setPanel((current) => (current === name ? null : name));
+
+  // "/" opens search; Escape closes any open panel
   useEffect(() => {
-    productService.getBrands().then((res) => {
-      const b = res.data?.data || res.data;
-      if (Array.isArray(b)) {
-        setBrands(b.slice(0, 8)); // Grab top 8
+    const onKey = (e) => {
+      const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+      if (e.key === '/' && !typing) {
+        e.preventDefault();
+        setPanel('search');
+      } else if (e.key === 'Escape') {
+        setPanel(null);
       }
-    }).catch(console.error);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  useEffect(() => () => window.clearTimeout(hoverTimer.current), []);
+
+  // Hover intent for the categories panel (pointer devices only)
+  const canHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const openCategoriesSoon = () => {
+    if (!canHover()) return;
+    window.clearTimeout(hoverTimer.current);
+    hoverTimer.current = window.setTimeout(() => setPanel((p) => (p === 'search' ? p : 'categories')), 140);
+  };
+  const cancelTimer = () => window.clearTimeout(hoverTimer.current);
+  const closeCategoriesSoon = () => {
+    if (!canHover()) return;
+    window.clearTimeout(hoverTimer.current);
+    hoverTimer.current = window.setTimeout(() => setPanel((p) => (p === 'categories' ? null : p)), 220);
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
-  const navLinks = isAuthenticated ? AUTH_NAV_LINKS : PUBLIC_NAV_LINKS;
+  const glass = !mobileOpen && (pathname !== '/' || scrolled || panel !== null);
+  const hidden = tucked && !panel && !mobileOpen;
 
   return (
     <>
-      <div className="sticky top-0 z-40 w-full flex flex-col">
-        {/* Main Header Row */}
-        <motion.header
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4 }}
+      <MotionHeader
+        initial={{ y: -24, opacity: 0 }}
+        animate={{ y: hidden ? '-130%' : '0%', opacity: 1 }}
+        transition={{ duration: 0.55, ease: EASE }}
+        onMouseEnter={cancelTimer}
+        onMouseLeave={closeCategoriesSoon}
+        className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5"
+      >
+        <div
           className={cn(
-            'w-full border-b bg-white/90 dark:bg-neutral-950/90 backdrop-blur-xl transition-shadow duration-300',
-            isScrolled
-              ? 'border-neutral-200/70 dark:border-neutral-800 shadow-[0_6px_24px_-12px_rgba(15,23,42,0.18)] dark:shadow-[0_6px_24px_-12px_rgba(0,0,0,0.6)]'
-              : 'border-neutral-100 dark:border-neutral-800'
+            'mx-auto max-w-[1360px] rounded-[1.75rem] transition-[background-color,box-shadow,backdrop-filter] duration-500',
+            glass
+              ? 'bg-surface/80 shadow-[0_18px_50px_-28px_rgba(14,23,38,0.35)] ring-1 ring-line backdrop-blur-xl backdrop-saturate-150'
+              : 'bg-transparent ring-1 ring-transparent'
           )}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16 lg:h-18">
-              {/* Left — Logo + Mobile Menu */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setIsDrawerOpen(true)}
-                  className="lg:hidden p-2 rounded-xl text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                  aria-label="Open menu"
-                >
-                  <Menu className="w-5 h-5" />
-                </button>
-                <Link
-                  to={isAuthenticated ? '/dashboard' : '/'}
-                  className="flex items-center"
-                  aria-label="1SKYSTORE home"
-                >
-                  <BrandWordmark className="text-xl sm:text-2xl" />
-                </Link>
-              </div>
+          <div className="flex h-14 items-center gap-2 pl-4 pr-1.5 sm:h-16 sm:pl-6 sm:pr-2">
+            <div className="flex flex-1 items-center">
+            <Link
+              to={isAuthenticated ? '/dashboard' : '/'}
+              className="mr-auto rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+              aria-label="1SKYSTORE home"
+            >
+              <BrandWordmark priority className="h-12 sm:h-14" />
+            </Link>
+            </div>
 
-              {/* Center — Navigation */}
-              <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
-                {navLinks.map((link) => {
-                  const isActive = location.pathname === link.path;
+            {/* Desktop links with a travelling hover highlight */}
+            {/* Centred between two equal flex-1 sides */}
+            <nav aria-label="Main" className="hidden shrink-0 lg:block" onMouseLeave={() => setHovered(null)}>
+              <ul className="flex items-center">
+                {STORE_NAV.map((item) => {
+                  const active = !item.menu && isActivePath(pathname, item.path);
+                  const itemClass =
+                    'relative flex min-h-10 items-center rounded-full px-4 text-[14px] font-medium text-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+                  const highlight = hovered === item.name && (
+                    <MotionSpan
+                      layoutId="nav-hover"
+                      className="absolute inset-0 rounded-full bg-ink/6"
+                      transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                    />
+                  );
+
                   return (
-                    <Link
-                      key={link.name}
-                      to={link.path}
-                      className={cn(
-                        'px-4 py-2 rounded-xl text-sm font-medium transition-colors',
-                        isActive
-                          ? 'text-primary-600 bg-primary-50 font-semibold ring-1 ring-inset ring-primary-100 dark:text-primary-300 dark:bg-primary-900/20 dark:ring-primary-800/50'
-                          : 'text-neutral-600 hover:text-primary-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-primary-400'
+                    <li key={item.name} onMouseEnter={() => setHovered(item.name)}>
+                      {item.menu ? (
+                        <button
+                          type="button"
+                          aria-expanded={panel === 'categories'}
+                          aria-controls={PANEL_CATEGORIES}
+                          onClick={() => togglePanel('categories')}
+                          onMouseEnter={openCategoriesSoon}
+                          className={itemClass}
+                        >
+                          {highlight}
+                          <span className="relative flex items-center gap-1">
+                            {item.name}
+                            <ChevronDown
+                              className={cn('h-3.5 w-3.5 transition-transform duration-300', panel === 'categories' && 'rotate-180')}
+                              aria-hidden="true"
+                            />
+                          </span>
+                        </button>
+                      ) : (
+                        <Link
+                          to={item.path}
+                          aria-current={active ? 'page' : undefined}
+                          onMouseEnter={panel === 'categories' ? closeCategoriesSoon : undefined}
+                          className={itemClass}
+                        >
+                          {highlight}
+                          <span className="relative">{item.name}</span>
+                          {active && (
+                            <MotionSpan
+                              layoutId="nav-active"
+                              className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-accent"
+                              transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                            />
+                          )}
+                        </Link>
                       )}
-                    >
-                      {link.name}
-                    </Link>
+                    </li>
                   );
                 })}
-              </nav>
+              </ul>
+            </nav>
 
-               {/* Right — Actions */}
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className="p-2 rounded-xl text-neutral-500 hover:text-primary-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                  aria-label="Search"
-                >
-                  <Search className="w-5 h-5" />
-                </button>
-
-                <ThemeToggle />
-
-                <Link
-                  to="/cart"
-                  className="relative p-2 rounded-xl text-neutral-500 hover:text-primary-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                  aria-label="Cart"
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  {itemCount > 0 && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-gradient-to-br from-primary-500 to-secondary-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-neutral-950"
-                    >
-                      {itemCount > 99 ? '99+' : itemCount}
-                    </motion.span>
-                  )}
-                </Link>
-
-                {isAuthenticated ? (
-                  <div className="hidden sm:flex items-center gap-2 ml-2">
-                    <Link
-                      to="/profile"
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-neutral-600 hover:text-primary-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors"
-                    >
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center shadow-sm">
-                        <span className="text-xs font-semibold text-white">
-                          {user?.first_name?.[0]?.toUpperCase() || 'U'}
-                        </span>
-                      </div>
-                      <span className="hidden md:inline">{user?.first_name || 'Account'}</span>
-                    </Link>
-                  </div>
-                ) : (
-                  <Link to="/login" className="hidden sm:block ml-2">
-                    <Button size="sm" variant="primary">
-                      Sign In
-                    </Button>
-                  </Link>
-                )}
-              </div>
+            <div className="flex items-center gap-0.5 lg:flex-1 lg:justify-end">
+              <button
+                type="button"
+                onClick={() => togglePanel('search')}
+                aria-expanded={panel === 'search'}
+                aria-controls={PANEL_SEARCH}
+                aria-label="Search"
+                aria-keyshortcuts="/"
+                className={ICON_BUTTON}
+              >
+                <Search className="h-4.5 w-4.5" aria-hidden="true" />
+              </button>
+              <ThemeToggle className="hidden sm:flex" />
+              <AccountMenu user={user} isAuthenticated={isAuthenticated} onLogout={handleLogout} />
+              <CartButton />
+              <button
+                type="button"
+                onClick={() => setMobileOpen((v) => !v)}
+                aria-expanded={mobileOpen}
+                aria-controls={MOBILE_MENU}
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                className={cn(ICON_BUTTON, 'lg:hidden')}
+              >
+                <span className="relative block h-3 w-5" aria-hidden="true">
+                  <MotionSpan
+                    className="absolute left-0 top-0 h-[1.5px] w-5 rounded-full bg-current"
+                    animate={mobileOpen ? { y: 5.25, rotate: 45 } : { y: 0, rotate: 0 }}
+                    transition={{ duration: 0.4, ease: EASE }}
+                  />
+                  <MotionSpan
+                    className="absolute bottom-0 left-0 h-[1.5px] w-5 rounded-full bg-current"
+                    animate={mobileOpen ? { y: -5.25, rotate: -45 } : { y: 0, rotate: 0 }}
+                    transition={{ duration: 0.4, ease: EASE }}
+                  />
+                </span>
+              </button>
             </div>
           </div>
 
-          {/* Search Bar (expandable) */}
-          <AnimatePresence>
-            {isSearchOpen && (
-              <motion.div
+          <AnimatePresence initial={false}>
+            {panel === 'search' && (
+              <MotionDiv
+                key="search"
+                id={PANEL_SEARCH}
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden border-t border-neutral-100 dark:border-neutral-800"
+                transition={{ duration: 0.4, ease: EASE }}
+                className="overflow-hidden"
               >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                  <SearchBar onClose={() => setIsSearchOpen(false)} />
+                <div className="border-t border-line px-3 pb-4 pt-4 sm:px-6 sm:pb-6">
+                  <SearchBar onClose={closePanel} />
                 </div>
-              </motion.div>
+              </MotionDiv>
+            )}
+            {panel === 'categories' && (
+              <div className="hidden lg:block" key="categories">
+                <CategoriesPanel id={PANEL_CATEGORIES} onNavigate={closePanel} />
+              </div>
             )}
           </AnimatePresence>
-        </motion.header>
-
-        {/* Dynamic Brands Row */}
-        {brands.length > 0 && (
-          <div className="w-full bg-gradient-to-r from-primary-50 via-primary-100 to-primary-50 dark:from-primary-700 dark:via-primary-600 dark:to-primary-700 border-b border-primary-200/70 dark:border-primary-700 overflow-x-auto no-scrollbar hidden md:block py-2.5">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-primary-700 dark:text-white/90 uppercase tracking-widest whitespace-nowrap mr-2">Top Brands</span>
-                <div className="flex items-center gap-2">
-                  {brands.map((b, i) => (
-                    <Link 
-                      key={i} 
-                      to={`/brand/${encodeURIComponent(b)}`}
-                      className="px-4 py-1.5 rounded-full border border-primary-200 dark:border-transparent bg-white dark:bg-black/20 text-[11px] font-semibold text-primary-700 dark:text-white hover:bg-primary-500 hover:text-white hover:border-primary-500 hover:shadow-glow dark:hover:bg-black/40 transition-all whitespace-nowrap shadow-sm dark:shadow-none"
-                    >
-                      {b}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Mobile Drawer */}
-      <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} title={<BrandWordmark className="text-xl" />}>
-        <nav className="flex flex-col gap-1 mb-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              onClick={() => setIsDrawerOpen(false)}
-              className={cn(
-                'flex items-center justify-between px-3 py-3 rounded-xl text-base font-medium transition-colors',
-                location.pathname === link.path
-                  ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                  : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-800'
-              )}
-            >
-              <div className="flex items-center gap-3">
-                {link.name === 'Dashboard' && <LayoutDashboard className="w-5 h-5" />}
-                {link.name}
-              </div>
-              <ChevronRight className="w-4 h-4 text-neutral-400" />
-            </Link>
-          ))}
-        </nav>
-
-        <div className="border-t border-neutral-100 dark:border-neutral-800 pt-4 space-y-2">
-          <Link
-            to="/cart"
-            onClick={() => setIsDrawerOpen(false)}
-            className="flex items-center gap-3 px-3 py-3 rounded-xl text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-          >
-            <ShoppingBag className="w-5 h-5" />
-            <span>Cart</span>
-            {itemCount > 0 && (
-              <span className="ml-auto w-6 h-6 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                {itemCount}
-              </span>
-            )}
-          </Link>
-
-          {isAuthenticated ? (
-            <>
-              <Link
-                to="/profile"
-                onClick={() => setIsDrawerOpen(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-xl text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <User className="w-5 h-5" />
-                <span>Profile</span>
-              </Link>
-              <button
-                onClick={() => { handleLogout(); setIsDrawerOpen(false); }}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-error-500 hover:bg-error-50 dark:hover:bg-error-500/10 transition-colors"
-              >
-                <LogOut className="w-5 h-5" />
-                <span>Logout</span>
-              </button>
-            </>
-          ) : (
-            <Link to="/login" onClick={() => setIsDrawerOpen(false)} className="block pt-2">
-              <Button className="w-full">Sign In</Button>
-            </Link>
-          )}
         </div>
-      </Drawer>
+      </MotionHeader>
+
+      {/* Dim the page behind open panels; click to dismiss */}
+      <AnimatePresence>
+        {panel && (
+          <MotionDiv
+            key="nav-scrim"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            onClick={closePanel}
+            className="fixed inset-0 z-40 bg-ink/15 backdrop-blur-[3px]"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
+      <MobileMenu
+        id={MOBILE_MENU}
+        open={mobileOpen}
+        onClose={closeMobile}
+        user={user}
+        isAuthenticated={isAuthenticated}
+        onLogout={handleLogout}
+      />
     </>
   );
 }

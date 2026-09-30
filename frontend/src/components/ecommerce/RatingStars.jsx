@@ -10,13 +10,15 @@ export default function RatingStars({ rating = 0, max = 5, size = 'sm', classNam
       {[...Array(max)].map((_, i) => (
         <Star
           key={i}
+          aria-hidden="true"
+          strokeWidth={1.5}
           className={cn(
             iconSize,
             i < Math.floor(rating)
-              ? 'text-warning-500 fill-warning-500'
+              ? 'text-amber-500 fill-amber-500'
               : i < rating
-              ? 'text-warning-500 fill-warning-500 opacity-50'
-              : 'text-neutral-300 dark:text-neutral-600'
+              ? 'text-amber-500 fill-amber-500/50'
+              : 'text-ink/20'
           )}
         />
       ))}

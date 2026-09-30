@@ -1,16 +1,21 @@
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { SlidersHorizontal, X, ChevronDown, Search } from 'lucide-react';
 import productService from '@/api/product.service';
 import { fetchWithCache } from '@/utils/apiCache';
 import ProductGrid from '@/components/ecommerce/ProductGrid';
 import Pagination from '@/components/ui/Pagination';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
-import { pageTransition } from '@/animations/variants';
+import PageHeader from '@/components/common/PageHeader';
+import { CONTAINER } from '@/components/home/ui/styles';
+import { pageTransition, EASE_OUT } from '@/animations/variants';
+import { cn } from '@/utils/cn';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+
+const MotionDiv = motion.div;
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -156,124 +161,153 @@ export default function Shop() {
   const brandOptions = brands.map((b) => (typeof b === 'string' ? { value: b, label: b } : { value: b.slug || b.name, label: b.name }));
   const symptomOptions = symptoms.map((s) => (typeof s === 'string' ? { value: s, label: s } : { value: s.slug || s.name, label: s.name }));
 
-  return (
-    <motion.div {...pageTransition} className="min-h-screen">
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-950 dark:via-neutral-950 dark:to-primary-900/30 border-b border-neutral-100 dark:border-neutral-800">
-        <div className="bg-grid-pattern absolute inset-0 pointer-events-none" />
-        <div className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-secondary-200/40 blur-3xl pointer-events-none dark:bg-secondary-800/15" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          {search ? (
-            <>
-              <h1 className="text-3xl sm:text-4xl font-heading font-bold text-neutral-900 dark:text-white">
-                Results for <span className="text-primary-500">"{search}"</span>
-              </h1>
-              <p className="mt-2 text-neutral-500 dark:text-neutral-400">Showing all products matching your search</p>
-            </>
-          ) : (
-            <>
-              <h1 className="text-3xl sm:text-4xl font-heading font-bold text-neutral-900 dark:text-white">Shop</h1>
-              <p className="mt-2 text-neutral-500 dark:text-neutral-400">Explore our premium product range</p>
-            </>
-          )}
-        </div>
-      </div>
+  // Header copy only: show the category's display name when one is active
+  const categoryLabel = categoryOptions.find((o) => o.value === category)?.label || category;
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col gap-4 mb-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden gap-2"
-              >
-                <SlidersHorizontal className="w-4 h-4" /> Filters
-              </Button>
-              {hasFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-error-500 transition-colors bg-white px-3 py-1.5 rounded-full border shadow-sm"
-                >
-                  Clear all <X className="w-3 h-3" />
-                </button>
+  return (
+    <MotionDiv {...pageTransition} className="min-h-screen">
+      {search ? (
+        <PageHeader
+          eyebrow="Search"
+          title="Results for"
+          accent={`“${search}”`}
+          intro="Showing all products matching your search"
+          className="[&_h1]:[overflow-wrap:anywhere]"
+        />
+      ) : (
+        <PageHeader
+          eyebrow={category ? 'Shop · Category' : 'Shop'}
+          title={category ? categoryLabel : 'Shop all'}
+          accent={category ? undefined : 'remedies'}
+          intro="Explore our premium product range"
+          className={cn('[&_h1]:[overflow-wrap:anywhere]', category && '[&_h1]:capitalize')}
+        />
+      )}
+
+      <div className={cn(CONTAINER, 'pb-24 sm:pb-32')}>
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-4">
+          <div className="flex min-h-11 items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              aria-expanded={showFilters}
+              aria-controls="shop-filters"
+              className="lg:hidden"
+            >
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" /> Filters
+              {activeFilters.length > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] tabular-nums text-white">
+                  {activeFilters.length}
+                </span>
               )}
-            </div>
-            <div className="flex items-center gap-3">
+            </Button>
+            {!loading && totalPages > 1 && (
+              <p className="hidden text-[13px] tabular-nums text-ink-faint lg:block">
+                Page {page} of {totalPages}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <label
+              htmlFor="shop-sort"
+              className="hidden text-[11px] font-medium uppercase tracking-[0.22em] text-ink-faint sm:block"
+            >
+              Sort
+            </label>
+            <div className="w-[10.5rem] sm:w-56">
               <Select
+                id="shop-sort"
                 options={sortOptions}
                 value={sort}
                 onChange={(e) => updateFilter('sort_by', e.target.value)}
                 placeholder="Sort by..."
-                className="w-44"
               />
             </div>
           </div>
-
-          {/* Active Filter Pills */}
-          {activeFilters.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              {activeFilters.map((filter, idx) => (
-                <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/50 text-xs font-semibold text-primary-700 dark:text-primary-300 rounded-full shadow-sm">
-                  {filter.label}
-                  <button onClick={filter.remove} className="focus:outline-none hover:text-primary-900 dark:hover:text-primary-100 transition-colors">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
         </div>
 
-        <div className="flex gap-8 relative items-start">
+        {/* Active filter pills */}
+        {(activeFilters.length > 0 || hasFilters) && (
+          <div className="flex flex-wrap items-center gap-2 pt-5">
+            {activeFilters.map((filter, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={filter.remove}
+                aria-label={`Remove filter: ${filter.label}`}
+                className="group inline-flex min-h-11 max-w-full items-center gap-2 rounded-full bg-surface py-1.5 pl-4 pr-1.5 text-[13px] font-medium text-ink ring-1 ring-inset ring-line transition-colors duration-300 hover:bg-ink hover:text-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                <span className="truncate">{filter.label}</span>
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mist text-ink-soft transition-colors duration-300 group-hover:bg-canvas/15 group-hover:text-canvas">
+                  <X className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+              </button>
+            ))}
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex min-h-11 items-center rounded-full px-3 text-[13px] font-medium text-ink-soft underline decoration-line underline-offset-4 transition-colors hover:text-ink hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+        )}
+
+        <div className="mt-8 flex flex-col gap-8 sm:mt-10 lg:flex-row lg:items-start lg:gap-12">
           {/* Sidebar */}
-          <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-72 flex-shrink-0 mb-8 lg:mb-0 space-y-4`}>
-            <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm">
-              <Accordion title="Category" defaultOpen>
-                <FilterSearchList
-                  options={categoryOptions}
-                  type="radio"
-                  selected={category}
-                  onChange={(v) => updateFilter('category', v)}
-                />
-              </Accordion>
+          <aside
+            id="shop-filters"
+            aria-label="Filters"
+            className={cn(showFilters ? 'block' : 'hidden', 'w-full shrink-0 lg:block lg:w-72')}
+          >
+            <div className="overflow-hidden rounded-[1.75rem] bg-surface ring-1 ring-line">
+              <p className="px-5 pt-5 text-[11px] font-medium uppercase tracking-[0.22em] text-ink-faint sm:px-6">
+                Refine
+              </p>
+              <div className="divide-y divide-line">
+                <Accordion title="Category" defaultOpen>
+                  <FilterSearchList
+                    options={categoryOptions}
+                    type="radio"
+                    selected={category}
+                    onChange={(v) => updateFilter('category', v)}
+                  />
+                </Accordion>
 
-              <div className="w-full h-px bg-neutral-100 dark:bg-neutral-800" />
+                <Accordion title="Price" defaultOpen>
+                  <PriceFilter
+                    minPrice={minPrice} maxPrice={maxPrice}
+                    onChange={(min, max) => {
+                      updateFilter('min_price', min);
+                      updateFilter('max_price', max);
+                    }}
+                  />
+                </Accordion>
 
-              <Accordion title="Price" defaultOpen>
-                <PriceFilter
-                  minPrice={minPrice} maxPrice={maxPrice}
-                  onChange={(min, max) => {
-                    updateFilter('min_price', min);
-                    updateFilter('max_price', max);
-                  }}
-                />
-              </Accordion>
+                <Accordion title="Brand">
+                  <FilterSearchList
+                    options={brandOptions}
+                    type="checkbox"
+                    selected={brand}
+                    onChange={(v) => toggleArrayFilter('brand', brand, v)}
+                  />
+                </Accordion>
 
-              <div className="w-full h-px bg-neutral-100 dark:bg-neutral-800" />
+                <Accordion title="Symptom">
+                  <FilterSearchList
+                    options={symptomOptions}
+                    type="checkbox"
+                    selected={symptom}
+                    onChange={(v) => toggleArrayFilter('symptom', symptom, v)}
+                  />
+                </Accordion>
+              </div>
 
-              <Accordion title="Brand">
-                <FilterSearchList
-                  options={brandOptions}
-                  type="checkbox"
-                  selected={brand}
-                  onChange={(v) => toggleArrayFilter('brand', brand, v)}
-                />
-              </Accordion>
-
-              <div className="w-full h-px bg-neutral-100 dark:bg-neutral-800" />
-
-              <Accordion title="Symptom">
-                <FilterSearchList
-                  options={symptomOptions}
-                  type="checkbox"
-                  selected={symptom}
-                  onChange={(v) => toggleArrayFilter('symptom', symptom, v)}
-                />
-              </Accordion>
-
-              <div className="p-5 border-t border-neutral-100 dark:border-neutral-800 lg:hidden">
-                <Button className="w-full" onClick={() => setShowFilters(false)}>
+              <div className="border-t border-line p-5 lg:hidden">
+                <Button size="lg" className="w-full" onClick={() => setShowFilters(false)}>
                   Apply
                 </Button>
               </div>
@@ -281,7 +315,7 @@ export default function Shop() {
           </aside>
 
           {/* Product Grid */}
-          <div className="flex-1 w-full min-w-0">
+          <div className="w-full min-w-0 flex-1">
             <ProductGrid products={products} loading={loading} />
             <Pagination
               page={page}
@@ -291,34 +325,79 @@ export default function Shop() {
           </div>
         </div>
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 }
 
 function Accordion({ title, children, defaultOpen = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div className="p-5">
+    <div className="px-5 sm:px-6">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between text-left font-bold text-neutral-900 dark:text-neutral-100"
+        aria-expanded={isOpen}
+        className="group flex min-h-14 w-full items-center justify-between gap-4 rounded-sm py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <span className="text-[15px]">{title}</span>
-        {isOpen ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
+        <span className="font-display text-[15px] font-medium tracking-[-0.01em] text-ink">{title}</span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-soft ring-1 ring-inset ring-line transition-colors duration-300 group-hover:bg-ink group-hover:text-canvas">
+          <ChevronDown
+            className={cn(
+              'h-4 w-4 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+              isOpen && 'rotate-180'
+            )}
+            aria-hidden="true"
+          />
+        </span>
       </button>
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0, marginTop: 0 }}
-            animate={{ height: 'auto', opacity: 1, marginTop: 16 }}
-            exit={{ height: 0, opacity: 0, marginTop: 0 }}
+          <MotionDiv
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.45, ease: EASE_OUT }}
             className="overflow-hidden"
           >
-            {children}
-          </motion.div>
+            <div className="pb-5 pt-1">{children}</div>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/** One radio / checkbox row with a custom hairline control */
+function ChoiceRow({ type, checked, onChange, label }) {
+  const radio = type === 'radio';
+  return (
+    <label className="group flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-2 transition-colors duration-200 hover:bg-mist">
+      <span className="relative flex h-[18px] w-[18px] shrink-0 items-center justify-center">
+        <input
+          type={type}
+          checked={checked}
+          onChange={onChange}
+          className={cn(
+            'peer absolute inset-0 m-0 cursor-pointer appearance-none border border-ink/25 bg-surface transition-colors duration-200 checked:border-ink',
+            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+            radio ? 'rounded-full' : 'rounded-[5px] checked:bg-ink'
+          )}
+        />
+        {radio ? (
+          <span className="pointer-events-none relative h-2 w-2 rounded-full bg-ink opacity-0 transition-opacity duration-200 peer-checked:opacity-100" />
+        ) : (
+          <svg className="pointer-events-none relative h-3 w-3 text-canvas opacity-0 transition-opacity duration-200 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+        )}
+      </span>
+      <span
+        className={cn(
+          'select-none text-sm leading-snug transition-colors duration-200',
+          checked ? 'font-medium text-ink' : 'text-ink-soft group-hover:text-ink'
+        )}
+      >
+        {label}
+      </span>
+    </label>
   );
 }
 
@@ -327,62 +406,57 @@ function FilterSearchList({ options, type, selected, onChange }) {
   const filtered = options.filter(o => o.label.toLowerCase().includes(q.toLowerCase()));
 
   return (
-    <div className="space-y-3 pb-1 px-[2px] pt-[2px]">
+    <div className="space-y-3">
       <div className="relative">
+        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
         <input
           type="text"
           placeholder="Search..."
+          aria-label="Search options"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="w-full pl-3 pr-8 py-2 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800 rounded-lg text-sm text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-neutral-400"
+          className="h-11 w-full rounded-full border border-line bg-canvas pl-10 pr-4 text-base text-ink transition-[border-color,box-shadow] duration-200 placeholder:text-ink-faint focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15 sm:text-sm"
         />
       </div>
-      <div className="max-h-56 overflow-y-auto space-y-2.5 pr-2">
+      <div className="-mx-2 max-h-64 overflow-y-auto overscroll-contain">
         {type === 'radio' && (
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <div className="relative flex items-center justify-center">
-              <input
-                type="radio"
-                checked={selected === ''}
-                onChange={() => onChange('')}
-                className="peer appearance-none w-4 h-4 border border-neutral-300 dark:border-neutral-700 rounded-full checked:border-primary-500 checked:bg-white transition-all cursor-pointer"
-              />
-              <div className="absolute w-2 h-2 rounded-full bg-primary-500 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
-            </div>
-            <span className={`text-sm select-none transition-colors ${selected === '' ? 'text-neutral-900 font-medium dark:text-white' : 'text-neutral-600 group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-200'}`}>
-              All Categories
-            </span>
-          </label>
+          <ChoiceRow
+            type="radio"
+            checked={selected === ''}
+            onChange={() => onChange('')}
+            label="All Categories"
+          />
         )}
 
         {filtered.map(opt => {
           const isChecked = type === 'radio' ? selected === opt.value : selected.includes(opt.value);
           return (
-            <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
-              <div className="relative flex items-center justify-center">
-                <input
-                  type={type}
-                  checked={isChecked}
-                  onChange={() => onChange(opt.value)}
-                  className={`peer appearance-none w-4 h-4 border ${type === 'radio' ? 'rounded-full' : 'rounded-sm'} border-neutral-300 dark:border-neutral-700 checked:!border-primary-500 checked:!bg-primary-500 transition-all cursor-pointer bg-white dark:bg-neutral-900`}
-                />
-                {type === 'radio' ? (
-                  <div className="absolute w-2 h-2 rounded-full bg-primary-500 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
-                ) : (
-                  <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                )}
-              </div>
-              <span className={`text-[14px] select-none transition-colors ${isChecked ? 'text-neutral-900 font-medium dark:text-white' : 'text-neutral-600 group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-200'}`}>
-                {opt.label}
-              </span>
-            </label>
+            <ChoiceRow
+              key={opt.value}
+              type={type}
+              checked={isChecked}
+              onChange={() => onChange(opt.value)}
+              label={opt.label}
+            />
           );
         })}
-        {filtered.length === 0 && <p className="text-xs text-neutral-400 italic py-2">No results found</p>}
+        {filtered.length === 0 && <p className="px-2 py-3 text-[13px] text-ink-faint">No results found</p>}
       </div>
     </div>
   );
 }
+
+// rc-slider takes inline styles; CSS variables keep it in step with the theme
+const SLIDER_HANDLE = {
+  borderColor: 'var(--c-ink)',
+  borderWidth: 1.5,
+  height: 20,
+  width: 20,
+  marginTop: -8,
+  backgroundColor: 'var(--c-surface)',
+  opacity: 1,
+  boxShadow: '0 2px 8px -2px rgba(14, 23, 38, 0.3)',
+};
 
 function PriceFilter({ minPrice, maxPrice, onChange }) {
   const [sliderRange, setSliderRange] = useState([
@@ -412,16 +486,21 @@ function PriceFilter({ minPrice, maxPrice, onChange }) {
   const rangeActive = (min, max) => minPrice === min && maxPrice === max;
 
   return (
-    <div className="space-y-6 flex flex-col">
+    <div className="flex flex-col gap-5">
       <div className="flex flex-wrap gap-2">
         {predefined.map((p, i) => (
           <button
             key={i}
+            type="button"
             onClick={() => handleChip(p.min, p.max)}
-            className={`px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide transition-all border ${rangeActive(p.min, p.max)
-                ? 'bg-primary-500 text-white border-primary-500'
-                : 'bg-white text-neutral-600 border-neutral-200 hover:border-primary-300 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-300'
-              }`}
+            aria-pressed={rangeActive(p.min, p.max)}
+            className={cn(
+              'min-h-11 rounded-full px-4 text-[11px] font-medium tracking-[0.12em] ring-1 ring-inset transition-colors duration-300',
+              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+              rangeActive(p.min, p.max)
+                ? 'bg-ink text-canvas ring-ink'
+                : 'text-ink-soft ring-line hover:text-ink hover:ring-ink/40'
+            )}
           >
             {p.label}
           </button>
@@ -429,7 +508,7 @@ function PriceFilter({ minPrice, maxPrice, onChange }) {
       </div>
 
       {/* Functional Slider using rc-slider */}
-      <div className="px-2 pt-2 pb-6">
+      <div className="px-2.5 py-3">
         <Slider
           range
           min={0}
@@ -441,40 +520,40 @@ function PriceFilter({ minPrice, maxPrice, onChange }) {
             const newMax = val[1] === 1000 ? '' : String(val[1]);
             onChange(newMin, newMax);
           }}
-          trackStyle={[{ backgroundColor: '#0A3576', height: 4 }]}
-          railStyle={{ backgroundColor: '#E5E0D0', height: 4 }}
-          handleStyle={[
-            { borderColor: '#0A3576', height: 16, width: 16, marginTop: -6, backgroundColor: 'white', opacity: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-            { borderColor: '#0A3576', height: 16, width: 16, marginTop: -6, backgroundColor: 'white', opacity: 1, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
-          ]}
+          trackStyle={[{ backgroundColor: 'var(--c-accent)', height: 4 }]}
+          railStyle={{ backgroundColor: 'var(--c-line)', height: 4 }}
+          handleStyle={[SLIDER_HANDLE, SLIDER_HANDLE]}
         />
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 group">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm font-semibold transition-colors group-focus-within:text-primary-500">$</span>
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-faint">$</span>
           <input
             type="number"
             placeholder="0"
+            aria-label="Minimum price"
             value={minPrice}
             onChange={(e) => onChange(e.target.value, maxPrice)}
-            className="w-full pl-7 pr-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-primary-500 transition-colors"
+            className="h-11 w-full min-w-0 rounded-2xl border border-line bg-canvas pl-7 pr-3 text-base tabular-nums text-ink transition-[border-color,box-shadow] duration-200 placeholder:text-ink-faint focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15 sm:text-sm"
           />
         </div>
-        <div className="relative flex-1 group">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm font-semibold transition-colors group-focus-within:text-primary-500">$</span>
+        <span className="text-ink-faint" aria-hidden="true">–</span>
+        <div className="relative flex-1">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-faint">$</span>
           <input
             type="number"
             placeholder="Max"
+            aria-label="Maximum price"
             value={maxPrice}
             onChange={(e) => onChange(minPrice, e.target.value)}
-            className="w-full pl-7 pr-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-primary-500 transition-colors"
+            className="h-11 w-full min-w-0 rounded-2xl border border-line bg-canvas pl-7 pr-3 text-base tabular-nums text-ink transition-[border-color,box-shadow] duration-200 placeholder:text-ink-faint focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15 sm:text-sm"
           />
         </div>
       </div>
-      <div className="text-[11px] font-medium text-neutral-500">
-        Range: {minPrice || '0'} — {maxPrice || 'Max'}(Max 1000)
-      </div>
+      <p className="text-[12px] tabular-nums text-ink-faint">
+        Range: {minPrice || '0'} — {maxPrice || 'Max'} (Max 1000)
+      </p>
     </div>
   );
 }

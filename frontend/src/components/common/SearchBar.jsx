@@ -61,36 +61,41 @@ export default function SearchBar({ onClose }) {
     <div className="w-full max-w-2xl mx-auto">
       <div className="relative flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 pointer-events-none" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faint pointer-events-none" aria-hidden="true" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search products..."
-            className="w-full pl-12 pr-10 py-3.5 rounded-2xl border border-neutral-200 bg-white text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+            placeholder="Search remedies by name…"
+            aria-label="Search products"
+            className="w-full min-h-12 pl-12 pr-10 py-3 rounded-full bg-mist text-[15px] text-ink placeholder:text-ink-faint ring-1 ring-inset ring-transparent transition-shadow focus:outline-none focus:ring-accent/50"
           />
           {query && (
             <button
+              type="button"
               onClick={() => setQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full text-ink-faint hover:text-ink hover:bg-ink/6"
             >
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
         <button
+          type="button"
           onClick={handleSearch}
-          className="flex items-center gap-2 px-5 py-3.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-2xl transition-colors shadow-sm whitespace-nowrap"
+          className="flex min-h-12 items-center gap-2 px-5 bg-ink hover:bg-accent text-canvas text-sm font-medium rounded-full transition-colors whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
-          <Search className="w-4 h-4" />
-          Search
+          <Search className="w-4 h-4 sm:hidden" aria-hidden="true" />
+          <span className="max-sm:sr-only">Search</span>
         </button>
         {onClose && (
           <button
+            type="button"
             onClick={onClose}
-            className="flex items-center justify-center p-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 rounded-2xl transition-colors shrink-0"
+            className="flex h-12 w-12 items-center justify-center rounded-full text-ink ring-1 ring-inset ring-line hover:bg-ink/6 transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             aria-label="Close search"
           >
             <X className="w-5 h-5" />
@@ -104,42 +109,46 @@ export default function SearchBar({ onClose }) {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="mt-2 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 shadow-elevated overflow-hidden"
+            className="mt-3 bg-surface rounded-2xl ring-1 ring-line overflow-hidden"
           >
             {loading ? (
-              <div className="p-4 text-center text-sm text-neutral-500">Searching...</div>
+              <div className="p-4 text-center text-sm text-ink-faint" role="status">Searching…</div>
             ) : (
               <>
                 {results.map((product) => (
                   <button
                     key={product.id}
                     onClick={() => handleSelect(product)}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-left"
+                    type="button"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-mist focus-visible:bg-mist focus-visible:outline-none transition-colors text-left"
                   >
                     {(() => {
                       const imageUrl = product.images?.[0]?.image_url || product.images?.[0] || product.image;
                       return imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={product.name}
-                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                        />
+                        <span className="w-11 h-11 rounded-xl bg-plate flex-shrink-0 overflow-hidden">
+                          <img
+                            src={imageUrl}
+                            alt=""
+                            className="w-full h-full object-contain p-1 mix-blend-multiply"
+                          />
+                        </span>
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex-shrink-0" />
+                        <span className="w-11 h-11 rounded-xl bg-plate flex-shrink-0" />
                       );
                     })()}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100 truncate">
+                      <p className="text-sm font-medium text-ink truncate">
                         {product.name}
                       </p>
-                      <p className="text-xs text-neutral-500">{product.category}</p>
+                      <p className="text-xs text-ink-faint">{product.category}</p>
                     </div>
                   </button>
                 ))}
                 {results.length > 0 && (
                   <button
+                    type="button"
                     onClick={handleSearch}
-                    className="w-full px-4 py-3 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors text-center border-t border-neutral-100 dark:border-neutral-800"
+                    className="w-full px-4 py-3 text-sm font-medium text-ink hover:bg-mist transition-colors text-center border-t border-line"
                   >
                     See all results for "{query}"
                   </button>

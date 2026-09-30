@@ -27,10 +27,10 @@ export default function Pagination({ page, totalPages, onPageChange }) {
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         aria-label="Previous page"
-        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
+        className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors duration-300 ${
           page <= 1
-            ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed'
-            : 'text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-500'
+            ? 'text-ink/25 ring-1 ring-inset ring-line cursor-not-allowed'
+            : 'text-ink ring-1 ring-inset ring-line hover:bg-ink hover:text-canvas'
         }`}
       >
         <ChevronLeft className="w-5 h-5" />
@@ -41,10 +41,11 @@ export default function Pagination({ page, totalPages, onPageChange }) {
         <button
           key={p}
           onClick={() => onPageChange(p)}
-          className={`w-10 h-10 rounded-xl text-sm font-medium transition-all duration-200 ${
+          aria-current={page === p ? 'page' : undefined}
+          className={`w-11 h-11 rounded-full text-sm font-medium tabular-nums transition-colors duration-300 ${
             page === p
-              ? 'bg-primary-500 text-white shadow-sm shadow-primary-500/30'
-              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-500'
+              ? 'bg-ink text-canvas'
+              : 'text-ink-soft hover:bg-ink/6 hover:text-ink'
           }`}
         >
           {p}
@@ -56,10 +57,10 @@ export default function Pagination({ page, totalPages, onPageChange }) {
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         aria-label="Next page"
-        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
+        className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors duration-300 ${
           page >= totalPages
-            ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed'
-            : 'text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-500'
+            ? 'text-ink/25 ring-1 ring-inset ring-line cursor-not-allowed'
+            : 'text-ink ring-1 ring-inset ring-line hover:bg-ink hover:text-canvas'
         }`}
       >
         <ChevronRight className="w-5 h-5" />

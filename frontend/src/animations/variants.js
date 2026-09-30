@@ -87,3 +87,40 @@ export const drawerSlide = {
   exit: { x: '-100%' },
   transition: { type: 'spring', damping: 30, stiffness: 300 },
 };
+
+// ─── Storefront motion system ────────────────────────────────────────────────
+// One easing family keeps the homepage calm and consistent: long, soft
+// deceleration for reveals; a symmetric curve for things that move and return.
+
+export const EASE_OUT = [0.22, 1, 0.36, 1];
+export const EASE_IN_OUT = [0.65, 0, 0.35, 1];
+
+// Parent that staggers `reveal*` children once it scrolls into view
+export const revealGroup = (stagger = 0.08, delay = 0) => ({
+  hidden: {},
+  show: { transition: { staggerChildren: stagger, delayChildren: delay } },
+});
+
+export const revealUp = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE_OUT } },
+};
+
+export const revealFade = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 1, ease: EASE_OUT } },
+};
+
+// Text line rising out of an overflow-hidden mask
+export const revealLine = {
+  hidden: { y: '110%' },
+  show: { y: '0%', transition: { duration: 1.05, ease: EASE_OUT } },
+};
+
+// Image uncovered from the bottom edge upward
+export const revealClip = {
+  hidden: { clipPath: 'inset(100% 0% 0% 0%)' },
+  show: { clipPath: 'inset(0% 0% 0% 0%)', transition: { duration: 1.3, ease: EASE_IN_OUT } },
+};
+
+export const IN_VIEW = { once: true, amount: 0.25 };
