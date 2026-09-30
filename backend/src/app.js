@@ -9,15 +9,11 @@ const app = express();
 
 // ─── SECURITY ────────────────────────────────────────────────────────────────
 app.use(helmet());
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:3000",
-  "http://localhost:3002",
-  // "https://instahomeo.com",
-  // "https://www.instahomeo.com",
-  // "https://admin.instahomeo.com",
-].filter(Boolean);
+// Comma-separated list in .env, e.g. CORS_ORIGINS=http://localhost:5173,https://example.com
+const allowedOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim().replace(/\/$/, ""))
+  .filter(Boolean);
 
 app.use(
   cors({
