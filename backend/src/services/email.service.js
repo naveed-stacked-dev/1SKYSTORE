@@ -1,7 +1,7 @@
 const transporter = require('../config/email');
 const templates = require('../utils/emailTemplates');
 
-const EMAIL_FROM = process.env.EMAIL_FROM || '1SkyStore <noreply@instahomeo.com>';
+const EMAIL_FROM = process.env.EMAIL_FROM || `1SkyStore <${process.env.EMAIL_USER}>`;
 
 /**
  * Send email helper

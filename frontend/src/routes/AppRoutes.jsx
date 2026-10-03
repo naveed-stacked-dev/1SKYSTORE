@@ -31,6 +31,7 @@ const ReturnPolicy = lazy(() => import('@/pages/ReturnPolicy'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsConditions = lazy(() => import('@/pages/TermsConditions'));
 const Faq = lazy(() => import('@/pages/Faq'));
+const Disclaimer = lazy(() => import('@/pages/Disclaimer'));
 const ContactUs = lazy(() => import('@/pages/ContactUs'));
 
 function PageLoader() {
@@ -66,6 +67,7 @@ export default function AppRoutes() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-conditions" element={<TermsConditions />} />
           <Route path="/faq" element={<Faq />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/contact" element={<ContactUs />} />
           
           {/* User must be logged in for these */}

@@ -28,7 +28,7 @@ export default function PrivacyPolicy() {
 
         <div className="min-w-0 lg:col-span-8 lg:col-start-5">
           <p className="max-w-[68ch] border-b border-line pb-10 font-display text-[clamp(1.2rem,2vw,1.45rem)] leading-[1.45] tracking-[-0.015em] text-ink sm:pb-14 [&_strong]:font-medium [&_strong]:text-accent">
-            This Privacy Policy explains how we collect, use, and safeguard your information when you use our website <strong>www.instahomeo.com</strong>.
+            This Privacy Policy explains how we collect, use, and safeguard your information when you use our <strong>1SkyStore</strong> website.
           </p>
 
           <PolicySection sections={SECTIONS} index={0}>
@@ -82,9 +82,9 @@ export default function PrivacyPolicy() {
               <p>If you have questions about this Privacy Policy, please contact us:</p>
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <a href="mailto:instahomeo4u@gmail.com" className={CONTACT_LINK}>
+              <a href="mailto:1skystoreofficial@gmail.com" className={CONTACT_LINK}>
                 <span className={CONTACT_CHIP} aria-hidden="true"><Mail className="h-4 w-4" /></span>
-                <span className="min-w-0 break-all">instahomeo4u@gmail.com</span>
+                <span className="min-w-0 break-all">1skystoreofficial@gmail.com</span>
               </a>
               <a href="tel:9705950500" className={CONTACT_LINK}>
                 <span className={CONTACT_CHIP} aria-hidden="true"><Phone className="h-4 w-4" /></span>

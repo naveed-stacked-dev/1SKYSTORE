@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "homeopathy-ecommerce-full-v1",
-		"name": "HomeoPathy Ecommerce Full API",
+		"name": "1SkyStore Ecommerce Full API",
 		"description": "Comprehensive Postman collection for the 1SkyStore Ecommerce Backend. Includes all 90+ endpoints for users and admins.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},

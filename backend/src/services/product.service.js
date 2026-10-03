@@ -573,16 +573,100 @@ async function writeProductImages(productId, urls, transaction) {
   );
 }
 
-/** Ordered image URLs of a product, using the same order the export writes. */
-async function readProductImageUrls(productId, transaction) {
+/** Ordered image URLs per product (same order the export writes), as Map<productId, url[]>. */
+async function loadImageUrls(productIds, transaction) {
+  const byProduct = new Map();
+  if (!productIds.length) return byProduct;
   const images = await ProductImage.findAll({
-    where: { product_id: productId },
-    order: [['is_primary', 'DESC'], ['sort_order', 'ASC']],
-    attributes: ['image_url'],
+    where: { product_id: productIds },
+    order: [['product_id', 'ASC'], ['is_primary', 'DESC'], ['sort_order', 'ASC']],
+    attributes: ['product_id', 'image_url'],
     transaction,
   });
-  return images.map((img) => img.image_url);
+  for (const img of images) {
+    if (!byProduct.has(img.product_id)) byProduct.set(img.product_id, []);
+    byProduct.get(img.product_id).push(img.image_url);
+  }
+  return byProduct;
 }
+
+const skuKey = (sku) => String(sku).toLowerCase();
+
+/**
+ * Every product the sheet can refer to (by id or sku), fetched in one query.
+ * The DB is remote, so per-row lookups cost a round trip each and turned a
+ * full-catalogue re-import into a 25+ minute request.
+ */
+async function loadImportTargets(rows, columns, transaction) {
+  const ids = columns.has('id')
+    ? [...new Set(rows.map((r) => parseNumber(r.id)).filter((n) => n !== null && n > 0).map(Math.trunc))]
+    : [];
+  const skus = [...new Set(rows.map((r) => cleanString(r.sku)).filter(Boolean))];
+
+  const byId = new Map();
+  const bySku = new Map();
+  if (ids.length || skus.length) {
+    const products = await Product.findAll({
+      where: { [Op.or]: [ids.length && { id: ids }, skus.length && { sku: skus }].filter(Boolean) },
+      transaction,
+    });
+    for (const p of products) {
+      byId.set(p.id, p);
+      bySku.set(skuKey(p.sku), p);
+    }
+  }
+  return { byId, bySku };
+}
+
+const UPDATE_BATCH_SIZE = 500;
+
+/** One UPDATE ... SET col = CASE id WHEN .. END statement for a batch of { product, values }. */
+async function bulkUpdateProducts(items, transaction) {
+  const qi = sequelize.getQueryInterface();
+  const fields = [...new Set(items.flatMap((item) => Object.keys(item.values)))];
+
+  const sets = fields.map((field) => {
+    const attr = Product.rawAttributes[field];
+    const column = qi.quoteIdentifier(attr.field || field);
+    const isJson = attr.type.key === 'JSON';
+    const cases = items
+      .filter((item) => field in item.values)
+      .map(({ product, values }) => {
+        const value = isJson && values[field] !== null ? JSON.stringify(values[field]) : values[field];
+        return `WHEN ${Number(product.id)} THEN ${sequelize.escape(value)}`;
+      })
+      .join(' ');
+    return `${column} = CASE id ${cases} ELSE ${column} END`;
+  });
+  sets.push(`updated_at = ${sequelize.escape(new Date())}`);
+
+  const ids = items.map((item) => Number(item.product.id)).join(', ');
+  await sequelize.query(`UPDATE products SET ${sets.join(', ')} WHERE id IN (${ids})`, { transaction });
+}
+
+/**
+ * Write the collected row updates in batches. If a batch is rejected (e.g. a
+ * unique slug clash) it is replayed row by row so only the offending rows fail.
+ */
+async function applyProductUpdates(pending, transaction, onRowFailure) {
+  for (let i = 0; i < pending.length; i += UPDATE_BATCH_SIZE) {
+    const batch = pending.slice(i, i + UPDATE_BATCH_SIZE);
+    try {
+      await bulkUpdateProducts(batch, transaction);
+    } catch (batchErr) {
+      for (const item of batch) {
+        try {
+          await item.product.update(item.values, { transaction });
+        } catch (err) {
+          onRowFailure(item, err);
+        }
+      }
+    }
+  }
+}
+
+const describeError = (err) =>
+  (err.errors ? err.errors.map((e) => e.message).join(', ') : (err.message || String(err)));
 
 /**
  * Bulk import products from an XLSX/CSV buffer.
@@ -621,6 +705,12 @@ async function bulkImport(fileBuffer, adminId, filename) {
 
   const transaction = await sequelize.transaction();
   try {
+    const { byId, bySku } = await loadImportTargets(rows, columns, transaction);
+    const storedImages = columns.has('images') ? await loadImageUrls([...byId.keys()], transaction) : new Map();
+    // Updates to existing products are queued and written in batches after the loop.
+    const pendingUpdates = [];
+    const pendingImages = new Map();
+
     for (let i = 0; i < rows.length; i += 1) {
       const row = rows[i];
       const rowNum = i + 2; // +1 for the header row, +1 to make it 1-based
@@ -638,10 +728,10 @@ async function bulkImport(fileBuffer, adminId, filename) {
         let product = null;
         const rowId = columns.has('id') ? parseNumber(row.id) : null;
         if (rowId !== null && rowId > 0) {
-          product = await Product.findByPk(Math.trunc(rowId), { transaction });
+          product = byId.get(Math.trunc(rowId)) || null;
         }
         if (!product && rowSku) {
-          product = await Product.findOne({ where: { sku: rowSku }, transaction });
+          product = bySku.get(skuKey(rowSku)) || null;
         }
         if (!product && !rowSku) {
           fail('Row has no sku (or matching id) to identify the product');
@@ -652,8 +742,8 @@ async function bulkImport(fileBuffer, adminId, filename) {
           fail(`Duplicate row: this product was already processed at row ${seenProductRows.get(product.id)}`);
           continue;
         }
-        if (!product && seenSkuRows.has(rowSku.toLowerCase())) {
-          fail(`Duplicate row: SKU '${rowSku}' was already processed at row ${seenSkuRows.get(rowSku.toLowerCase())}`);
+        if (!product && seenSkuRows.has(skuKey(rowSku))) {
+          fail(`Duplicate row: SKU '${rowSku}' was already processed at row ${seenSkuRows.get(skuKey(rowSku))}`);
           continue;
         }
 
@@ -664,12 +754,10 @@ async function bulkImport(fileBuffer, adminId, filename) {
           continue;
         }
 
+        // Every sku in the sheet was preloaded, so a clash with the new sku is in bySku.
         if (product && values.sku && values.sku !== product.sku) {
-          const clash = await Product.findOne({
-            where: { sku: values.sku, id: { [Op.ne]: product.id } },
-            transaction,
-          });
-          if (clash) {
+          const clash = bySku.get(skuKey(values.sku));
+          if (clash && clash.id !== product.id) {
             fail(`SKU '${values.sku}' is already used by product #${clash.id}`);
             continue;
           }
@@ -682,21 +770,20 @@ async function bulkImport(fileBuffer, adminId, filename) {
           const created = await Product.create(values, { transaction });
           if (incomingImages) await writeProductImages(created.id, incomingImages, transaction);
 
+          byId.set(created.id, created);
+          bySku.set(skuKey(created.sku), created);
           counts.added += 1;
           seenProductRows.set(created.id, rowNum);
-          seenSkuRows.set(created.sku.toLowerCase(), rowNum);
+          seenSkuRows.set(skuKey(created.sku), rowNum);
           results.push({ row: rowNum, id: created.id, sku: created.sku, name: created.name, status: 'added', changes: [] });
           continue;
         }
 
         seenProductRows.set(product.id, rowNum);
-        seenSkuRows.set(product.sku.toLowerCase(), rowNum);
+        seenSkuRows.set(skuKey(product.sku), rowNum);
 
-        let imagesChanged = false;
-        if (incomingImages) {
-          const currentImages = await readProductImageUrls(product.id, transaction);
-          imagesChanged = !sameOrderedList(currentImages, incomingImages);
-        }
+        const imagesChanged = Boolean(incomingImages)
+          && !sameOrderedList(storedImages.get(product.id) || [], incomingImages);
 
         const changedColumns = imagesChanged ? [...changes, 'images'] : changes;
 
@@ -714,29 +801,54 @@ async function bulkImport(fileBuffer, adminId, filename) {
           continue;
         }
 
-        // ── Update only what differs ──────────────────────────────────────
-        if (Object.keys(values).length > 0) await product.update(values, { transaction });
-        if (imagesChanged) {
-          // Rows are replaced but the old S3 objects are left in place — a bulk
-          // sheet is too blunt an instrument to delete artwork irreversibly.
-          await ProductImage.destroy({ where: { product_id: product.id }, transaction, force: true });
-          await writeProductImages(product.id, incomingImages, transaction);
-        }
-
-        counts.updated += 1;
-        results.push({
+        // ── Queue an update of only what differs ──────────────────────────
+        const result = {
           row: rowNum,
           id: product.id,
           sku: product.sku,
           name: product.name,
           status: 'updated',
           changes: changedColumns,
-        });
+        };
+        if (Object.keys(values).length > 0) pendingUpdates.push({ product, values, result });
+        if (imagesChanged) pendingImages.set(product.id, incomingImages);
+        if (values.sku) {
+          bySku.delete(skuKey(product.sku));
+          bySku.set(skuKey(values.sku), product);
+        }
+
+        counts.updated += 1;
+        results.push(result);
       } catch (err) {
-        const detail = err.errors ? err.errors.map((e) => e.message).join(', ') : (err.message || String(err));
+        const detail = describeError(err);
         console.error(`Bulk import: row ${rowNum} (sku ${rowSku || 'n/a'}) failed:`, detail);
         fail(detail);
       }
+    }
+
+    await applyProductUpdates(pendingUpdates, transaction, ({ product, result }, err) => {
+      const message = describeError(err);
+      console.error(`Bulk import: row ${result.row} (sku ${product.sku}) failed:`, message);
+      Object.assign(result, { status: 'failed', changes: [], message });
+      counts.updated -= 1;
+      counts.failed += 1;
+      errors.push({ row: result.row, sku: product.sku, message });
+      pendingImages.delete(product.id);
+    });
+
+    if (pendingImages.size > 0) {
+      // Rows are replaced but the old S3 objects are left in place — a bulk
+      // sheet is too blunt an instrument to delete artwork irreversibly.
+      await ProductImage.destroy({ where: { product_id: [...pendingImages.keys()] }, transaction, force: true });
+      await ProductImage.bulkCreate(
+        [...pendingImages].flatMap(([productId, urls]) => urls.map((url, index) => ({
+          product_id: productId,
+          image_url: url,
+          is_primary: index === 0,
+          sort_order: index,
+        }))),
+        { transaction }
+      );
     }
 
     await transaction.commit();

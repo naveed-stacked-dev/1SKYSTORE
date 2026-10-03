@@ -40,7 +40,7 @@ export default function ContactUs() {
 
   const channels = [
     { icon: Phone, title: 'Phone', note: 'Call us directly', value: '9705950500', href: 'tel:9705950500' },
-    { icon: Mail, title: 'Email', note: 'Send us an email', value: 'instahomeo4u@gmail.com', href: 'mailto:instahomeo4u@gmail.com' },
+    { icon: Mail, title: 'Email', note: 'Send us an email', value: '1skystoreofficial@gmail.com', href: 'mailto:1skystoreofficial@gmail.com' },
     { icon: MapPin, title: 'Location', note: 'Visit our store', value: 'Hyderabad, India' },
   ];
 

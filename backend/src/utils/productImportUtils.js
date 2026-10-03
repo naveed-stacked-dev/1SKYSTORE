@@ -20,9 +20,17 @@ const FALSE_WORDS = new Set(['no', 'n', 'false', 'f', '0', 'inactive', 'disabled
 
 const isBlank = (v) => v === undefined || v === null || (typeof v === 'string' && v.trim() === '');
 
-/** Trimmed string, or '' for anything blank. */
+/**
+ * Excel rewrites line breaks when it saves a sheet (a stored "\r\n" comes back
+ * as "\r\r\n"), so text is compared and written with plain "\n" line breaks.
+ * Without this every untouched multi-line description reads as "changed" and
+ * each export -> import round-trip would add another "\r".
+ */
+const normalizeNewlines = (s) => s.replace(/\r*\n|\r/g, '\n');
+
+/** Trimmed string with normalised line breaks, or '' for anything blank. */
 function cleanString(v) {
-  return isBlank(v) ? '' : String(v).trim();
+  return isBlank(v) ? '' : normalizeNewlines(String(v).trim());
 }
 
 /** Yes/No-ish cell -> boolean, or null when blank/unrecognised. */

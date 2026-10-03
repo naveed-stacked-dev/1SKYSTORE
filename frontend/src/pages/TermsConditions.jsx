@@ -64,7 +64,7 @@ export default function TermsConditions() {
         title="Terms & Conditions"
         intro={
           <>
-            Welcome to 1SkyStore. By accessing and using <strong className="font-medium text-ink">www.instahomeo.com</strong>, you agree to comply with the following terms and conditions.
+            Welcome to 1SkyStore. By accessing and using the <strong className="font-medium text-ink">1SkyStore</strong> website, you agree to comply with the following terms and conditions.
           </>
         }
       />
@@ -86,9 +86,9 @@ export default function TermsConditions() {
               <p>For any questions regarding these Terms & Conditions:</p>
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <a href="mailto:instahomeo4u@gmail.com" className={CONTACT_LINK}>
+              <a href="mailto:1skystoreofficial@gmail.com" className={CONTACT_LINK}>
                 <span className={CONTACT_CHIP} aria-hidden="true"><Mail className="h-4 w-4" /></span>
-                <span className="min-w-0 break-all">instahomeo4u@gmail.com</span>
+                <span className="min-w-0 break-all">1skystoreofficial@gmail.com</span>
               </a>
               <a href="tel:9705950500" className={CONTACT_LINK}>
                 <span className={CONTACT_CHIP} aria-hidden="true"><Phone className="h-4 w-4" /></span>

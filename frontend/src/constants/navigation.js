@@ -34,6 +34,7 @@ export const FOOTER_LINKS = {
     { name: 'Journal', path: '/blog' },
     { name: 'Privacy Policy', path: '/privacy-policy' },
     { name: 'Terms of Service', path: '/terms-conditions' },
+    { name: 'Disclaimer', path: '/disclaimer' },
   ],
 };
 

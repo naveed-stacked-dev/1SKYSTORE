@@ -80,13 +80,13 @@ export default function Faq() {
 
           <div className="mt-8 flex flex-col gap-3">
             <a
-              href="mailto:instahomeo4u@gmail.com"
+              href="mailto:1skystoreofficial@gmail.com"
               className="group flex min-h-12 items-center gap-3 rounded-full bg-on-deep/8 py-1.5 pl-1.5 pr-5 text-[15px] font-medium text-on-deep ring-1 ring-inset ring-on-deep/10 transition-colors duration-500 hover:bg-on-deep hover:text-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9EC3ED]"
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-on-deep/10 transition-colors duration-500 group-hover:bg-deep group-hover:text-on-deep" aria-hidden="true">
                 <Mail className="h-4 w-4" />
               </span>
-              <span className="min-w-0 break-all">instahomeo4u@gmail.com</span>
+              <span className="min-w-0 break-all">1skystoreofficial@gmail.com</span>
             </a>
             <a
               href="tel:9705950500"

@@ -50,7 +50,7 @@ export default function ReturnPolicy() {
               </ul>
               <p className="mt-5 flex min-w-0 items-center gap-2.5 text-[15px] font-medium text-ink">
                 <Mail className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-                <span className="break-all">instahomeo4u@gmail.com</span>
+                <span className="break-all">1skystoreofficial@gmail.com</span>
               </p>
             </div>
           </PolicySection>
@@ -87,9 +87,9 @@ export default function ReturnPolicy() {
             <div className="mt-8 max-w-[68ch] rounded-[2rem] border border-line bg-surface px-6 py-8 sm:px-10 sm:py-10">
               <p className="font-display text-xl font-medium tracking-[-0.02em] text-ink">For cancellation requests, contact us immediately:</p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a href="mailto:instahomeo4u@gmail.com" className={CONTACT_LINK}>
+                <a href="mailto:1skystoreofficial@gmail.com" className={CONTACT_LINK}>
                   <span className={CONTACT_CHIP} aria-hidden="true"><Mail className="h-4 w-4" /></span>
-                  <span className="min-w-0 break-all">instahomeo4u@gmail.com</span>
+                  <span className="min-w-0 break-all">1skystoreofficial@gmail.com</span>
                 </a>
                 <a href="tel:9705950500" className={CONTACT_LINK}>
                   <span className={CONTACT_CHIP} aria-hidden="true"><Phone className="h-4 w-4" /></span>
